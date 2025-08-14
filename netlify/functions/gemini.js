@@ -2,16 +2,20 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 exports.handler = async (event) => {
+  const { prompt } = JSON.parse(event.body);
+
+  // A legújabb és legmegbízhatóbb modell
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
+
   try {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const { models } = await genAI.listModels();
-    
-    console.log("Elérhető modellek:");
-    models.forEach(model => console.log(model.name));
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: "A modellek listája kiírva a Netlify naplójába. Kérlek, nézd meg a Netlify Functions fülön a gemini függvény logjait." }),
+      body: JSON.stringify({ message: text }),
     };
   } catch (error) {
     return {
