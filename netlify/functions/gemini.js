@@ -5,7 +5,7 @@ exports.handler = async (event) => {
   const { prompt } = JSON.parse(event.body);
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
 
   try {
     const result = await model.generateContent(prompt);
