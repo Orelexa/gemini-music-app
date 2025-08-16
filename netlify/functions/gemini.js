@@ -27,7 +27,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { prompt } = JSON.parse(event.body);
+    const { prompt, mode } = JSON.parse(event.body);
 
     if (!prompt) {
       return {
@@ -37,24 +37,49 @@ exports.handler = async (event) => {
       };
     }
 
-    // GEMINI FLASH MODEL - NAGYOBB INGYENES KVÓTA
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY_NEW);
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      generationConfig: {
-        temperature: 0.9,
-        topP: 0.95,
-        topK: 64,
-        maxOutputTokens: 2048,
-        responseMimeType: "text/plain"
-      },
-      // Egyszerűsített systemInstruction a hatékonyabb rímelés érdekében
-      systemInstruction: `Te egy PROFI MAGYAR KÖLTŐ vagy, aki dalszövegeket ír. A dalszövegeknek mély érzelmeket kell közvetíteniük, tökéletes rímekkel, és szigorúan követniük kell a kért versformátumot. A feladatod, hogy a megadott téma, stílus és szerkezet alapján a legjobb minőségű dalszöveget készítsd el, amely magával ragadó és hibátlan. Ne írj kiegészítő szöveget a dalszöveg elé vagy után. Kizárólag a dalszöveg legyen a válaszod.`
-    });
+    let model;
+    let finalPrompt = prompt;
 
-    console.log("Generating content with prompt:", prompt.substring(0, 100) + "...");
+    // Különböző logikák a különböző módokhoz
+    if (mode === 'rhyme-search') {
+      // Rímkereső modell, nagyon alacsony kreativitással
+      model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 50
+        },
+        systemInstruction: `Te egy KIVÁLÓ rímkereső vagy. Egyetlen feladatod van: a megadott szóhoz rímelő szavak listáját adni. Csak a szavakat add meg, vesszővel elválasztva. Soha ne adj hozzá magyarázó szöveget vagy mondatot.`
+      });
+      finalPrompt = `Adj meg 5-10 szót, ami rímel a következő szóra: "${prompt}"`;
+    } else if (mode === 'chat') {
+      // Chat modell, ami a dalszövegíró szerepben van
+      model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        generationConfig: {
+          temperature: 0.8
+        },
+        systemInstruction: `Te egy PROFI MAGYAR KÖLTŐ vagy, aki dalszövegeket ír. A dalszövegeknek mély érzelmeket kell közvetíteniük, tökéletes rímekkel, és szigorúan követniük kell a kért versformátumot. A feladatod, hogy a megadott téma, stílus és szerkezet alapján a legjobb minőségű dalszöveget készítsd el, amely magával ragadó és hibátlan. Ne írj kiegészítő szöveget a dalszöveg elé vagy után. Kizárólag a dalszöveg legyen a válaszod.`
+      });
+    } else {
+      // Dalszöveg generáló modell (lyrics-gen)
+      model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        generationConfig: {
+          temperature: 0.9,
+          topP: 0.95,
+          topK: 64,
+          maxOutputTokens: 2048,
+          responseMimeType: "text/plain"
+        },
+        systemInstruction: `Te egy PROFI MAGYAR KÖLTŐ vagy, aki dalszövegeket ír. A dalszövegeknek mély érzelmeket kell közvetíteniük, tökéletes rímekkel, és szigorúan követniük kell a kért versformátumot. A feladatod, hogy a megadott téma, stílus és szerkezet alapján a legjobb minőségű dalszöveget készítsd el, amely magával ragadó és hibátlan. Ne írj kiegészítő szöveget a dalszöveg elé vagy után. Kizárólag a dalszöveg legyen a válaszod.`
+      });
+    }
 
-    const result = await model.generateContent(prompt);
+    console.log("Generating content with prompt:", finalPrompt.substring(0, 100) + "...");
+
+    const result = await model.generateContent(finalPrompt);
     const response = await result.response;
     const text = response.text();
 
