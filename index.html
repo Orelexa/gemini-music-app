@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini Zenei Stúdió Pro</title>
+    <title>Dalszöveg Generáló Alkalmazás</title>
     <style>
         * {
             margin: 0;
@@ -13,206 +13,235 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            color: #e0e0e0;
             padding: 20px;
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.95);
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(30, 30, 30, 0.95);
             backdrop-filter: blur(20px);
             border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 800px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
-            background-size: 300% 100%;
-            animation: gradientShift 3s ease-in-out infinite;
-        }
-
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .header {
-            margin-bottom: 30px;
+            text-align: center;
+            margin-bottom: 40px;
         }
 
         h1 {
-            color: #2c3e50;
+            color: #bb86fc;
             font-size: 2.5rem;
             margin-bottom: 10px;
-            font-weight: 700;
+            text-shadow: 0 0 20px rgba(187, 134, 252, 0.3);
         }
 
         .subtitle {
-            color: #7f8c8d;
+            color: #9e9e9e;
             font-size: 1.1rem;
             margin-bottom: 30px;
         }
 
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
         .input-section {
-            margin-bottom: 30px;
-        }
-
-        .input-group {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #e1e8ed;
+            background: rgba(40, 40, 40, 0.8);
+            padding: 25px;
             border-radius: 15px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: white;
-            color: #2c3e50;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            transform: translateY(-2px);
+        .output-section {
+            background: rgba(40, 40, 40, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-title {
+            color: #bb86fc;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
         }
 
         label {
             display: block;
             margin-bottom: 8px;
-            color: #34495e;
+            color: #e0e0e0;
             font-weight: 600;
-            text-align: left;
         }
 
-        .genre-select, .mood-select {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .genre-option, .mood-option {
-            padding: 10px 15px;
-            border: 2px solid #e1e8ed;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(50, 50, 50, 0.8);
+            color: #e0e0e0;
             font-size: 14px;
-            background: white;
-            color: #2c3e50;
+            transition: all 0.3s ease;
         }
 
-        .genre-option:hover, .mood-option:hover {
-            border-color: #667eea;
-            background: #667eea;
-            color: white;
-            transform: translateY(-2px);
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #bb86fc;
+            box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.2);
         }
 
-        .genre-option.selected, .mood-option.selected {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .range-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
 
         .generate-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #bb86fc 0%, #6200ee 100%);
             color: white;
             border: none;
-            padding: 15px 40px;
-            border-radius: 50px;
-            font-size: 18px;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(187, 134, 252, 0.3);
+            width: 100%;
+            margin-top: 20px;
         }
 
         .generate-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(187, 134, 252, 0.4);
         }
 
         .generate-btn:active {
-            transform: translateY(-1px);
+            transform: translateY(0);
         }
 
-        .generate-btn.loading {
-            pointer-events: none;
-        }
-
-        .generate-btn.loading::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 20px;
-            height: 20px;
-            margin: -10px 0 0 -10px;
-            border: 2px solid transparent;
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .output-section {
-            margin-top: 30px;
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .output-box {
-            background: #f8f9fa;
-            border: 2px solid #e1e8ed;
+            background: rgba(20, 20, 20, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
             border-radius: 15px;
             padding: 25px;
-            text-align: left;
-            min-height: 200px;
+            min-height: 400px;
             white-space: pre-wrap;
-            color: #2c3e50;
-            line-height: 1.6;
+            font-family: 'Courier New', monospace;
             font-size: 16px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            overflow-y: auto;
+            max-height: 600px;
             position: relative;
-            overflow: hidden;
         }
 
         .output-box.empty {
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #95a5a6;
+            color: #9e9e9e;
             font-style: italic;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .regenerate-btn {
+            background: linear-gradient(135deg, #03dac6 0%, #018786 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .regenerate-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(3, 218, 198, 0.3);
+        }
+
+        .regenerate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .rhyme-pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .rhyme-option {
+            padding: 8px 12px;
+            background: rgba(60, 60, 60, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .rhyme-option:hover {
+            border-color: #bb86fc;
+            background: rgba(70, 70, 70, 0.8);
+        }
+
+        .rhyme-option.selected {
+            background: linear-gradient(135deg, #bb86fc 0%, #6200ee 100%);
+            border-color: #bb86fc;
+            color: white;
         }
 
         .copy-btn {
             position: absolute;
             top: 15px;
             right: 15px;
-            background: #667eea;
+            background: rgba(187, 134, 252, 0.8);
             color: white;
             border: none;
             padding: 8px 12px;
@@ -227,84 +256,26 @@
             opacity: 1;
         }
 
-        .history-section {
-            margin-top: 30px;
-            text-align: left;
-        }
-
-        .history-item {
-            background: white;
-            border: 1px solid #e1e8ed;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .history-item:hover {
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transform: translateY(-1px);
-        }
-
-        .history-prompt {
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-
-        .history-preview {
-            color: #7f8c8d;
-            font-size: 14px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            background: #f1f3f4;
-            border-radius: 15px;
-            padding: 5px;
-        }
-
-        .tab {
-            flex: 1;
-            padding: 10px 20px;
-            border: none;
-            background: transparent;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-
-        .tab.active {
-            background: white;
-            color: #667eea;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
+        .copy-btn:hover {
+            background: rgba(187, 134, 252, 1);
         }
 
         @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
             .container {
                 padding: 20px;
                 margin: 10px;
             }
-
+            
             h1 {
                 font-size: 2rem;
             }
-
-            .genre-select, .mood-select {
+            
+            .rhyme-pattern-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
@@ -313,190 +284,302 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎵 Gemini Zenei Stúdió Pro</h1>
-            <p class="subtitle">Alkotj egyedi dalszövegeket mesterséges intelligencia segítségével</p>
+            <h1>🎵 Dalszöveg Generáló Alkalmazás</h1>
+            <p class="subtitle">Professzionális magyar dalszövegek mesterséges intelligencia segítségével</p>
         </div>
 
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('generator')">Dalszöveg Generátor</button>
-            <button class="tab" onclick="switchTab('history')">Előzmények</button>
-        </div>
-
-        <div id="generator" class="tab-content active">
+        <div class="main-content">
             <div class="input-section">
-                <div class="input-group">
-                    <label for="lyrics-prompt">Téma vagy történet:</label>
-                    <textarea id="lyrics-prompt" rows="3" placeholder="Például: Egy elveszett szerelem története, nyári kalandok, motivációs dal az álmokról..."></textarea>
+                <h2 class="section-title">⚙️ Beállítások</h2>
+                
+                <div class="form-group">
+                    <label for="theme">Téma és stílus leírása:</label>
+                    <textarea id="theme" rows="4" placeholder="Például: Szerelmes balladá a tavaszról, melankolikus hangvételű dal az emlékekről, energikus rock szám a szabadságról..."></textarea>
                 </div>
 
-                <div class="input-group">
-                    <label>Válassz műfajt:</label>
-                    <div class="genre-select">
-                        <div class="genre-option" data-genre="pop">Pop</div>
-                        <div class="genre-option" data-genre="rock">Rock</div>
-                        <div class="genre-option" data-genre="rap">Rap/Hip-Hop</div>
-                        <div class="genre-option" data-genre="folk">Folk</div>
-                        <div class="genre-option" data-genre="blues">Blues</div>
-                        <div class="genre-option" data-genre="electronic">Electronic</div>
+                <div class="form-group">
+                    <label>Versszakok száma:</label>
+                    <div class="range-group">
+                        <div>
+                            <label for="verses-from">Minimum:</label>
+                            <select id="verses-from">
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="verses-to">Maximum:</label>
+                            <select id="verses-to">
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4" selected>4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                                <option value="13">13</option>
+                                <option value="14">14</option>
+                                <option value="15">15</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <label>Hangulat:</label>
-                    <div class="mood-select">
-                        <div class="mood-option" data-mood="boldog">Boldog</div>
-                        <div class="mood-option" data-mood="szomorú">Szomorú</div>
-                        <div class="mood-option" data-mood="energikus">Energikus</div>
-                        <div class="mood-option" data-mood="romantikus">Romantikus</div>
-                        <div class="mood-option" data-mood="motivációs">Motivációs</div>
-                        <div class="mood-option" data-mood="nosztalgikus">Nosztalgikus</div>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label for="language">Nyelv:</label>
-                    <select id="language">
-                        <option value="magyar">Magyar</option>
-                        <option value="angol">Angol</option>
-                        <option value="német">Német</option>
-                        <option value="francia">Francia</option>
+                <div class="form-group">
+                    <label for="lines-per-verse">Sorok száma versszakonként:</label>
+                    <select id="lines-per-verse">
+                        <option value="2">2 sor</option>
+                        <option value="3">3 sor</option>
+                        <option value="4" selected>4 sor</option>
+                        <option value="5">5 sor</option>
+                        <option value="6">6 sor</option>
+                        <option value="7">7 sor</option>
+                        <option value="8">8 sor</option>
                     </select>
                 </div>
 
-                <button id="generate-lyrics-button" class="generate-btn">
+                <div class="form-group">
+                    <label for="max-syllables">Maximum szótagszám soronként:</label>
+                    <select id="max-syllables">
+                        <option value="4">4 szótag</option>
+                        <option value="6">6 szótag</option>
+                        <option value="8" selected>8 szótag</option>
+                        <option value="10">10 szótag</option>
+                        <option value="12">12 szótag</option>
+                        <option value="14">14 szótag</option>
+                        <option value="16">16 szótag</option>
+                        <option value="18">18 szótag</option>
+                        <option value="20">20 szótag</option>
+                        <option value="22">22 szótag</option>
+                        <option value="24">24 szótag</option>
+                        <option value="26">26 szótag</option>
+                        <option value="28">28 szótag</option>
+                        <option value="30">30 szótag</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Rímképlet:</label>
+                    <div class="rhyme-pattern-grid">
+                        <div class="rhyme-option selected" data-pattern="AABB">A-A-B-B</div>
+                        <div class="rhyme-option" data-pattern="ABAB">A-B-A-B</div>
+                        <div class="rhyme-option" data-pattern="AAAB">A-A-A-B</div>
+                        <div class="rhyme-option" data-pattern="ABBA">A-B-B-A</div>
+                        <div class="rhyme-option" data-pattern="AABA">A-A-B-A</div>
+                        <div class="rhyme-option" data-pattern="ABCC">A-B-C-C</div>
+                        <div class="rhyme-option" data-pattern="AAAA">A-A-A-A</div>
+                        <div class="rhyme-option" data-pattern="ABCD">A-B-C-D</div>
+                    </div>
+                </div>
+
+                <button id="generate-btn" class="generate-btn">
                     Dalszöveg Generálása
                 </button>
             </div>
 
             <div class="output-section">
-                <div id="lyrics-output" class="output-box empty">
+                <h2 class="section-title">📝 Generált Dalszöveg</h2>
+                
+                <div id="output" class="output-box empty">
                     Itt fog megjelenni a generált dalszöveg...
                     <button class="copy-btn" onclick="copyToClipboard()">Másolás</button>
                 </div>
-            </div>
-        </div>
 
-        <div id="history" class="tab-content">
-            <div class="history-section">
-                <h3>Korábbi dalszövegek</h3>
-                <div id="history-list">
-                    <!-- History items will be populated here -->
-                </div>
+                <button id="regenerate-btn" class="regenerate-btn" style="display: none;">
+                    Kijelölt Rész Újragenerálása
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        let selectedGenre = '';
-        let selectedMood = '';
-        let history = JSON.parse(localStorage.getItem('lyricsHistory') || '[]');
+        let selectedRhymePattern = 'AABB';
+        let lastGeneratedLyrics = '';
 
-        // Genre selection
-        document.querySelectorAll('.genre-option').forEach(option => {
+        // Rímképlet kiválasztás
+        document.querySelectorAll('.rhyme-option').forEach(option => {
             option.addEventListener('click', function() {
-                document.querySelectorAll('.genre-option').forEach(o => o.classList.remove('selected'));
+                document.querySelectorAll('.rhyme-option').forEach(o => o.classList.remove('selected'));
                 this.classList.add('selected');
-                selectedGenre = this.getAttribute('data-genre');
+                selectedRhymePattern = this.getAttribute('data-pattern');
             });
         });
 
-        // Mood selection
-        document.querySelectorAll('.mood-option').forEach(option => {
-            option.addEventListener('click', function() {
-                document.querySelectorAll('.mood-option').forEach(o => o.classList.remove('selected'));
-                this.classList.add('selected');
-                selectedMood = this.getAttribute('data-mood');
-            });
-        });
-
-        // Tab switching
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        // Dalszöveg generálás
+        document.getElementById('generate-btn').addEventListener('click', async () => {
+            const generateBtn = document.getElementById('generate-btn');
+            const outputDiv = document.getElementById('output');
             
-            event.target.classList.add('active');
-            document.getElementById(tabName).classList.add('active');
-            
-            if (tabName === 'history') {
-                loadHistory();
-            }
-        }
+            // Input értékek összegyűjtése
+            const theme = document.getElementById('theme').value.trim();
+            const versesFrom = parseInt(document.getElementById('verses-from').value);
+            const versesTo = parseInt(document.getElementById('verses-to').value);
+            const linesPerVerse = parseInt(document.getElementById('lines-per-verse').value);
+            const maxSyllables = parseInt(document.getElementById('max-syllables').value);
 
-        // Generate lyrics
-        document.getElementById('generate-lyrics-button').addEventListener('click', async () => {
-            const prompt = document.getElementById('lyrics-prompt').value;
-            const language = document.getElementById('language').value;
-            const outputDiv = document.getElementById('lyrics-output');
-            const button = document.getElementById('generate-lyrics-button');
-
-            if (!prompt.trim()) {
-                alert('Kérlek, adj meg egy témát!');
+            if (!theme) {
+                alert('Kérlek, add meg a dalszöveg témáját és stílusát!');
                 return;
             }
 
-            // Enhanced prompt with genre and mood
-            let enhancedPrompt = `Írj egy ${language} nyelvű dalszöveget a következő témáról: ${prompt}`;
-            
-            if (selectedGenre) {
-                enhancedPrompt += ` Műfaj: ${selectedGenre}.`;
-            }
-            
-            if (selectedMood) {
-                enhancedPrompt += ` Hangulat: ${selectedMood}.`;
-            }
-            
-            enhancedPrompt += ' A dalszöveg legyen kreatív, érzelmes és jól strukturált versszakokkal és refrénnel.';
-
-            button.classList.add('loading');
-            button.textContent = 'Generálás...';
+            // Gomb letiltása és loading állapot
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span class="loading"></span> Generálás...';
             outputDiv.className = 'output-box';
             outputDiv.textContent = 'A dalszöveg generálása folyamatban...';
+
+            // Prompt összeállítása
+            const prompt = createDetailedPrompt(theme, versesFrom, versesTo, linesPerVerse, maxSyllables, selectedRhymePattern);
 
             try {
                 const response = await fetch('/.netlify/functions/gemini', {
                     method: 'POST',
-                    body: JSON.stringify({ prompt: enhancedPrompt }),
+                    body: JSON.stringify({ prompt }),
                     headers: {
                         'Content-Type': 'application/json'
                     }
                 });
-                
+
                 const data = await response.json();
 
                 if (response.ok) {
+                    lastGeneratedLyrics = data.message;
                     outputDiv.innerHTML = data.message + '<button class="copy-btn" onclick="copyToClipboard()">Másolás</button>';
-                    
-                    // Save to history
-                    const historyItem = {
-                        id: Date.now(),
-                        prompt: prompt,
-                        genre: selectedGenre,
-                        mood: selectedMood,
-                        language: language,
-                        lyrics: data.message,
-                        timestamp: new Date().toLocaleString('hu-HU')
-                    };
-                    
-                    history.unshift(historyItem);
-                    if (history.length > 20) history.pop(); // Keep only last 20
-                    localStorage.setItem('lyricsHistory', JSON.stringify(history));
-                    
+                    showRegenerateButton();
                 } else {
                     outputDiv.textContent = `Hiba: ${data.error}`;
-                    outputDiv.className = 'output-box';
                 }
             } catch (error) {
                 outputDiv.textContent = `Hiba: ${error.message}`;
-                outputDiv.className = 'output-box';
             } finally {
-                button.classList.remove('loading');
-                button.textContent = 'Dalszöveg Generálása';
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Dalszöveg Generálása';
             }
         });
 
-        // Copy to clipboard
+        // Újragenerálás funkció
+        document.getElementById('regenerate-btn').addEventListener('click', async () => {
+            const selection = window.getSelection();
+            const selectedText = selection.toString().trim();
+            
+            if (!selectedText) {
+                alert('Kérlek, jelölj ki egy szövegrészt az újrageneráláshoz!');
+                return;
+            }
+
+            const regenerateBtn = document.getElementById('regenerate-btn');
+            const outputDiv = document.getElementById('output');
+            
+            regenerateBtn.disabled = true;
+            regenerateBtn.innerHTML = '<span class="loading"></span> Újragenerálás...';
+
+            const theme = document.getElementById('theme').value.trim();
+            const linesPerVerse = parseInt(document.getElementById('lines-per-verse').value);
+            const maxSyllables = parseInt(document.getElementById('max-syllables').value);
+
+            const regeneratePrompt = `
+Kérlek, generálj új szöveget a következő kijelölt rész helyére: "${selectedText}"
+
+A teljes dalszöveg kontextusa:
+${lastGeneratedLyrics}
+
+Követelmények:
+- Téma: ${theme}
+- Maximum ${maxSyllables} szótag soronként
+- Rímképlet: ${selectedRhymePattern}
+- Sorok száma versszakonként: ${linesPerVerse}
+- A szöveg illeszkedjen a dal stílusához és hangulatához
+- Magyar nyelvű, helyesírási hibák nélkül
+- Értelmes és költői nyelvezet
+
+Csak az új szövegrészt add vissza, a teljes dalt ne!
+`;
+
+            try {
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify({ prompt: regeneratePrompt }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Kijelölt szöveg cseréje
+                    const newLyrics = lastGeneratedLyrics.replace(selectedText, data.message);
+                    lastGeneratedLyrics = newLyrics;
+                    outputDiv.innerHTML = newLyrics + '<button class="copy-btn" onclick="copyToClipboard()">Másolás</button>';
+                } else {
+                    alert(`Hiba az újragenerálásban: ${data.error}`);
+                }
+            } catch (error) {
+                alert(`Hiba: ${error.message}`);
+            } finally {
+                regenerateBtn.disabled = false;
+                regenerateBtn.textContent = 'Kijelölt Rész Újragenerálása';
+            }
+        });
+
+        function createDetailedPrompt(theme, versesFrom, versesTo, linesPerVerse, maxSyllables, rhymePattern) {
+            return `
+Kérlek, írj egy professzionális magyar dalszöveget a következő specifikációk alapján:
+
+TÉMA ÉS STÍLUS: ${theme}
+
+TECHNIKAI KÖVETELMÉNYEK:
+- Versszakok száma: ${versesFrom} és ${versesTo} között
+- Sorok száma versszakonként: ${linesPerVerse}
+- Maximum szótagszám soronként: ${maxSyllables}
+- Rímképlet: ${rhymePattern} (minden versszakban következetesen)
+
+NYELVI KÖVETELMÉNYEK:
+- Magyar nyelvű, kifogástalan helyesírással
+- Költői, értelmes szöveg
+- A rímek természetesek legyenek, ne erőltetettek
+- A szótagszám pontosan legyen betartva minden sorban
+- Érzelmi mélység és autentikusság
+
+STRUKTÚRA:
+- Minden versszakot üres sorral válassz el
+- A rímképlet legyen következetes
+- A sorok között logikus összefüggés legyen
+
+Fokozottan figyelj a rímképletre: ${rhymePattern} - ez azt jelenti, hogy:
+${getRhymeExplanation(rhymePattern)}
+
+A dalszöveg legyen érzelmes, költői és jól énekelhető. Kerüld a banális rímeket!
+`;
+        }
+
+        function getRhymeExplanation(pattern) {
+            const explanations = {
+                'AABB': '1. és 2. sor rímeljen egymásra, 3. és 4. sor rímeljen egymásra',
+                'ABAB': '1. és 3. sor rímeljen egymásra, 2. és 4. sor rímeljen egymásra',
+                'AAAB': '1., 2. és 3. sor rímeljen egymásra, 4. sor különböző rím',
+                'ABBA': '1. és 4. sor rímeljen egymásra, 2. és 3. sor rímeljen egymásra',
+                'AABA': '1., 2. és 4. sor rímeljen egymásra, 3. sor különböző rím',
+                'ABCC': '1. sor különböző, 2. sor különböző, 3. és 4. sor rímeljen egymásra',
+                'AAAA': 'Minden sor rímeljen egymásra',
+                'ABCD': 'Minden sor különböző rímmel (nem rímelő)'
+            };
+            return explanations[pattern] || 'Egyedi rímképlet';
+        }
+
+        function showRegenerateButton() {
+            document.getElementById('regenerate-btn').style.display = 'block';
+        }
+
         function copyToClipboard() {
-            const outputDiv = document.getElementById('lyrics-output');
+            const outputDiv = document.getElementById('output');
             const text = outputDiv.textContent.replace('Másolás', '').trim();
             
             navigator.clipboard.writeText(text).then(() => {
@@ -509,65 +592,25 @@
             });
         }
 
-        // Load history
-        function loadHistory() {
-            const historyList = document.getElementById('history-list');
+        // Versszak tartomány validáció
+        document.getElementById('verses-from').addEventListener('change', function() {
+            const fromValue = parseInt(this.value);
+            const toSelect = document.getElementById('verses-to');
+            const toValue = parseInt(toSelect.value);
             
-            if (history.length === 0) {
-                historyList.innerHTML = '<p style="text-align: center; color: #95a5a6;">Még nincsenek mentett dalszövegek.</p>';
-                return;
+            if (fromValue > toValue) {
+                toSelect.value = fromValue;
             }
+        });
+
+        document.getElementById('verses-to').addEventListener('change', function() {
+            const toValue = parseInt(this.value);
+            const fromSelect = document.getElementById('verses-from');
+            const fromValue = parseInt(fromSelect.value);
             
-            historyList.innerHTML = history.map(item => `
-                <div class="history-item" onclick="loadFromHistory(${item.id})">
-                    <div class="history-prompt">${item.prompt}</div>
-                    <div class="history-preview">${item.lyrics.substring(0, 100)}...</div>
-                    <small style="color: #95a5a6;">${item.timestamp} • ${item.genre || 'Nincs műfaj'} • ${item.mood || 'Nincs hangulat'}</small>
-                </div>
-            `).join('');
-        }
-
-        // Load from history
-        function loadFromHistory(id) {
-            const item = history.find(h => h.id === id);
-            if (item) {
-                // Switch to generator tab
-                switchTab('generator');
-                document.querySelector('.tab').click();
-                
-                // Fill in the form
-                document.getElementById('lyrics-prompt').value = item.prompt;
-                document.getElementById('language').value = item.language;
-                
-                // Set genre and mood
-                if (item.genre) {
-                    document.querySelectorAll('.genre-option').forEach(o => o.classList.remove('selected'));
-                    const genreOption = document.querySelector(`[data-genre="${item.genre}"]`);
-                    if (genreOption) {
-                        genreOption.classList.add('selected');
-                        selectedGenre = item.genre;
-                    }
-                }
-                
-                if (item.mood) {
-                    document.querySelectorAll('.mood-option').forEach(o => o.classList.remove('selected'));
-                    const moodOption = document.querySelector(`[data-mood="${item.mood}"]`);
-                    if (moodOption) {
-                        moodOption.classList.add('selected');
-                        selectedMood = item.mood;
-                    }
-                }
-                
-                // Show the lyrics
-                const outputDiv = document.getElementById('lyrics-output');
-                outputDiv.className = 'output-box';
-                outputDiv.innerHTML = item.lyrics + '<button class="copy-btn" onclick="copyToClipboard()">Másolás</button>';
+            if (toValue < fromValue) {
+                fromSelect.value = toValue;
             }
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            loadHistory();
         });
     </script>
 </body>
