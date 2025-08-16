@@ -171,6 +171,13 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
+        .output-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
         .regenerate-btn {
             background: linear-gradient(135deg, #03dac6 0%, #018786 100%);
             color: white;
@@ -180,7 +187,6 @@
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 15px;
             transition: all 0.3s ease;
         }
 
@@ -192,6 +198,23 @@
         .regenerate-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+        }
+        
+        .copy-lyrics-btn {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .copy-lyrics-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
         }
 
         .loading {
@@ -237,29 +260,6 @@
             color: white;
         }
 
-        .copy-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(187, 134, 252, 0.8);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .output-box:hover .copy-btn {
-            opacity: 1;
-        }
-
-        .copy-btn:hover {
-            background: rgba(187, 134, 252, 1);
-        }
-
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -277,6 +277,11 @@
             
             .rhyme-pattern-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .output-actions {
+                flex-direction: column;
+                align-items: stretch;
             }
         }
     </style>
@@ -388,11 +393,15 @@
                 <h2 class="section-title">📝 Generált Dalszöveg</h2>
                 
                 <textarea id="output" class="output-box empty" placeholder="Itt fog megjelenni a generált dalszöveg...&#10;&#10;A szöveget itt közvetlenül szerkesztheted is!"></textarea>
-                <button class="copy-btn" onclick="copyToClipboard()" style="position: absolute; top: 15px; right: 15px; opacity: 0; transition: opacity 0.3s;">Másolás</button>
-
-                <button id="regenerate-btn" class="regenerate-btn" style="display: none;">
-                    Kijelölt Rész Újragenerálása
-                </button>
+                
+                <div class="output-actions" id="output-actions">
+                    <button id="regenerate-btn" class="regenerate-btn" style="display: none;">
+                        Kijelölt Rész Újragenerálása
+                    </button>
+                    <button id="copy-lyrics-btn" class="copy-lyrics-btn" style="display: none;">
+                        Másolás
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -432,8 +441,9 @@
             generateBtn.innerHTML = '<span class="loading"></span> Generálás...';
             outputTextarea.value = 'A dalszöveg generálása folyamatban...';
             outputTextarea.classList.remove('empty');
+            hideOutputActions();
 
-            // Prompt összeállítása - A prompt most rövidebb és tömörebb
+            // Prompt összeállítása
             const prompt = createDetailedPrompt(theme, versesFrom, versesTo, linesPerVerse, maxSyllables, selectedRhymePattern);
 
             try {
@@ -449,13 +459,13 @@
 
                 if (response.ok) {
                     let cleanedText = data.message.trim();
-                    cleanedText = cleanedText.replace(/\(\w\)/g, ''); // (A), (B) eltávolítása
-                    cleanedText = cleanedText.replace(/^\d+\.\s*versszak\s*/gim, ''); // versszak számok
+                    cleanedText = cleanedText.replace(/\(\w\)/g, '');
+                    cleanedText = cleanedText.replace(/^\d+\.\s*versszak\s*/gim, '');
                     cleanedText = cleanedText.trim();
                     
                     lastGeneratedLyrics = cleanedText;
                     outputTextarea.value = cleanedText;
-                    showRegenerateButton();
+                    showOutputActions();
                 } else {
                     outputTextarea.value = `Hiba: ${data.error}`;
                 }
@@ -467,7 +477,7 @@
             }
         });
 
-        // Újragenerálás funkció - Módosítottam a promptot és a kimenet feldolgozását
+        // Újragenerálás funkció
         document.getElementById('regenerate-btn').addEventListener('click', async () => {
             const outputTextarea = document.getElementById('output');
             const selectedText = getSelectedText();
@@ -514,11 +524,9 @@ FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok
 
                 if (response.ok) {
                     let newText = data.message.trim();
-                    // A felesleges részek eltávolítása
                     newText = newText.replace(/\(\w\)/g, '');
                     newText = newText.replace(/^\d+\.\s*versszak\s*/gim, '');
                     
-                    // A generált szöveg levágása a kívánt sorok számára
                     const newLines = newText.split('\n').slice(0, lineCount);
                     const finalNewText = newLines.join('\n');
                     
@@ -536,6 +544,11 @@ FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok
                 regenerateBtn.textContent = 'Kijelölt Rész Újragenerálása';
             }
         });
+
+        document.getElementById('copy-lyrics-btn').addEventListener('click', () => {
+             copyToClipboard();
+        });
+
 
         function getSelectedText() {
             const outputTextarea = document.getElementById('output');
@@ -560,8 +573,14 @@ FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok
             return promptParts.join('\n');
         }
 
-        function showRegenerateButton() {
-            document.getElementById('regenerate-btn').style.display = 'block';
+        function showOutputActions() {
+            document.getElementById('regenerate-btn').style.display = 'inline-block';
+            document.getElementById('copy-lyrics-btn').style.display = 'inline-block';
+        }
+        
+        function hideOutputActions() {
+            document.getElementById('regenerate-btn').style.display = 'none';
+            document.getElementById('copy-lyrics-btn').style.display = 'none';
         }
 
         function copyToClipboard() {
@@ -569,7 +588,7 @@ FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok
             const text = outputTextarea.value;
             
             navigator.clipboard.writeText(text).then(() => {
-                const copyBtn = document.querySelector('.copy-btn');
+                const copyBtn = document.getElementById('copy-lyrics-btn');
                 const originalText = copyBtn.textContent;
                 copyBtn.textContent = 'Másolva!';
                 setTimeout(() => {
