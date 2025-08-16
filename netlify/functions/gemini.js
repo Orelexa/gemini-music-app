@@ -42,12 +42,21 @@ exports.handler = async (event) => {
     const model = genAI.getGenerativeModel({ 
       model: "gemini-1.5-flash",
       generationConfig: {
-        temperature: 0.8,
-        topP: 0.9,
-        topK: 40,
+        temperature: 0.9,
+        topP: 0.95,
+        topK: 64,
         maxOutputTokens: 2048,
         responseMimeType: "text/plain"
-      }
+      },
+      systemInstruction: `Te egy szakértő magyar költő vagy, aki tökéletes rímeket és szótagszámot tud írni. 
+      KRITIKUS SZABÁLYOK:
+      1. Minden rím TÖKÉLETES legyen! 
+      2. Számold a szótagokat pontosan! 
+      3. SOHA ne írj (A), (B), (C) jelöléseket a sorok végére!
+      4. NE írj versszak számozást vagy extra szöveget!
+      5. Csak tiszta dalszöveget írj!
+      Példák a jó rímekre: szerelem-kegyelem, szívem-életem, álmok-bánom, szépség-reménység.
+      A rímképlet betartása FONTOSABB mint a tökéletes értelmes szöveg.`
     });
 
     console.log("Generating content with prompt:", prompt.substring(0, 100) + "...");
