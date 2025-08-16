@@ -307,6 +307,32 @@
             color: white;
         }
 
+        #rhyme-suggestions {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(20, 20, 20, 0.8);
+            border-radius: 10px;
+            display: none; /* Alapértelmezetten rejtve */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #rhyme-suggestions span {
+            display: inline-block;
+            background-color: #3700b3;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #rhyme-suggestions span:hover {
+            background-color: #6200ee;
+        }
+
+
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -441,6 +467,9 @@
                 
                 <textarea id="output" class="output-box empty" placeholder="Itt fog megjelenni a generált dalszöveg...&#10;&#10;A szöveget itt közvetlenül szerkesztheted is!"></textarea>
                 
+                <!-- Új rímjavaslatok div -->
+                <div id="rhyme-suggestions" style="display: none;"></div>
+
                 <div class="output-actions" id="output-actions">
                     <button id="regenerate-btn" class="regenerate-btn" style="display: none;">
                         Kijelölt Rész Újragenerálása
@@ -479,13 +508,88 @@
                 selectedRhymePattern = this.getAttribute('data-pattern');
             });
         });
+        
+        // Dinamikus rímkereső funkció
+        const rhymeSuggestionsDiv = document.getElementById('rhyme-suggestions');
+        const outputTextarea = document.getElementById('output');
+        let rhymeSearchTimer = null;
+
+        outputTextarea.addEventListener('keyup', (event) => {
+            clearTimeout(rhymeSearchTimer);
+            rhymeSearchTimer = setTimeout(async () => {
+                const cursorPosition = outputTextarea.selectionStart;
+                const text = outputTextarea.value;
+                const lines = text.substring(0, cursorPosition).split('\n');
+                const lastLine = lines[lines.length - 1];
+                const lastWord = lastLine.split(/[\s,.'";?!-]+/).pop().toLowerCase();
+
+                if (lastWord.length > 2) { // Minimum 3 karakteres szavakat keresünk
+                    try {
+                        const response = await fetch('/.netlify/functions/gemini', {
+                            method: 'POST',
+                            body: JSON.stringify({ prompt: lastWord, mode: 'rhyme-search' }),
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        if (response.ok) {
+                            displayRhymeSuggestions(data.message.split(','));
+                        } else {
+                            console.error('Rhyme search error:', data.error);
+                            rhymeSuggestionsDiv.style.display = 'none';
+                        }
+                    } catch (error) {
+                        console.error('Network error during rhyme search:', error);
+                        rhymeSuggestionsDiv.style.display = 'none';
+                    }
+                } else {
+                    rhymeSuggestionsDiv.style.display = 'none';
+                }
+            }, 500); // 500ms debounce
+        });
+
+        function displayRhymeSuggestions(words) {
+            rhymeSuggestionsDiv.innerHTML = '';
+            if (words && words.length > 0) {
+                rhymeSuggestionsDiv.style.display = 'block';
+                words.forEach(word => {
+                    const wordSpan = document.createElement('span');
+                    wordSpan.textContent = word.trim();
+                    wordSpan.addEventListener('click', () => {
+                        insertRhymingWord(word.trim());
+                    });
+                    rhymeSuggestionsDiv.appendChild(wordSpan);
+                });
+            } else {
+                rhymeSuggestionsDiv.style.display = 'none';
+            }
+        }
+
+        function insertRhymingWord(word) {
+            const cursorPosition = outputTextarea.selectionStart;
+            const textBeforeCursor = outputTextarea.value.substring(0, cursorPosition);
+            const textAfterCursor = outputTextarea.value.substring(cursorPosition);
+            const lines = textBeforeCursor.split('\n');
+            const lastLine = lines.pop();
+            const lastWordIndex = lastLine.lastIndexOf(lastLine.split(/[\s,.'";?!-]+/).pop());
+            const newLastLine = lastLine.substring(0, lastWordIndex);
+            
+            outputTextarea.value = `${lines.join('\n')}\n${newLastLine} ${word}${textAfterCursor}`;
+            
+            // Mozgatjuk a kurzort a beszúrt szó után
+            const newCursorPosition = (lines.join('\n') + `\n${newLastLine} ${word}`).length;
+            outputTextarea.selectionStart = newCursorPosition;
+            outputTextarea.selectionEnd = newCursorPosition;
+
+            rhymeSuggestionsDiv.style.display = 'none';
+            outputTextarea.focus();
+        }
 
         // Dalszöveg generálás
         document.getElementById('generate-btn').addEventListener('click', async () => {
             const generateBtn = document.getElementById('generate-btn');
-            const outputTextarea = document.getElementById('output');
             
-            // Input értékek összegyűjtése
             const theme = document.getElementById('theme').value.trim();
             const versesFrom = parseInt(document.getElementById('verses-from').value);
             const versesTo = parseInt(document.getElementById('verses-to').value);
@@ -497,20 +601,20 @@
                 return;
             }
 
-            // Gomb letiltása és loading állapot
             generateBtn.disabled = true;
             generateBtn.innerHTML = '<span class="loading"></span> Generálás...';
             outputTextarea.value = 'A dalszöveg generálása folyamatban...';
             outputTextarea.classList.remove('empty');
             hideOutputActions();
+            rhymeSuggestionsDiv.style.display = 'none';
 
-            // Prompt összeállítása
             const prompt = createDetailedPrompt(theme, versesFrom, versesTo, linesPerVerse, maxSyllables, selectedRhymePattern);
+            const requestBody = { prompt, mode: 'lyrics-gen' };
 
             try {
                 const response = await fetch('/.netlify/functions/gemini', {
                     method: 'POST',
-                    body: JSON.stringify({ prompt }),
+                    body: JSON.stringify(requestBody),
                     headers: {
                         'Content-Type': 'application/json'
                     }
@@ -570,11 +674,12 @@ ${lastGeneratedLyrics}
 
 FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok nélkül.
 `;
+            const requestBody = { prompt: regeneratePrompt, mode: 'lyrics-gen' };
 
             try {
                 const response = await fetch('/.netlify/functions/gemini', {
                     method: 'POST',
-                    body: JSON.stringify({ prompt: regeneratePrompt }),
+                    body: JSON.stringify(requestBody),
                     headers: {
                         'Content-Type': 'application/json'
                     }
@@ -612,27 +717,25 @@ FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok
             const userMessage = chatInput.value.trim();
             if (!userMessage) return;
 
-            // Felhasználó üzenetének megjelenítése
             const userMsgDiv = document.createElement('div');
             userMsgDiv.className = 'chat-message user-message';
             userMsgDiv.textContent = userMessage;
             chatBox.appendChild(userMsgDiv);
             chatInput.value = '';
 
-            // A chat előzmény hozzáadása a prompt-hoz
             chatHistory.push({ role: 'user', parts: [{ text: userMessage }] });
+            
+            const geminiMsgDiv = document.createElement('div');
+            geminiMsgDiv.className = 'chat-message gemini-message';
+            geminiMsgDiv.textContent = 'A Gemini válaszol...';
+            chatBox.appendChild(geminiMsgDiv);
 
-            // Prompt küldése a Netlify function-nek
+            const requestBody = { prompt: chatHistory.map(h => `${h.role === 'user' ? 'Felhasználó' : 'Gemini'}: ${h.parts[0].text}`).join('\n'), mode: 'chat' };
+
             try {
-                // A Gemini válaszának helye
-                const geminiMsgDiv = document.createElement('div');
-                geminiMsgDiv.className = 'chat-message gemini-message';
-                geminiMsgDiv.textContent = 'A Gemini válaszol...';
-                chatBox.appendChild(geminiMsgDiv);
-
                 const response = await fetch('/.netlify/functions/gemini', {
                     method: 'POST',
-                    body: JSON.stringify({ prompt: chatHistory.map(h => `${h.role === 'user' ? 'Felhasználó' : 'Gemini'}: ${h.parts[0].text}`).join('\n') }),
+                    body: JSON.stringify(requestBody),
                     headers: {
                         'Content-Type': 'application/json'
                     }
