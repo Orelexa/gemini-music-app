@@ -4,8 +4,8 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 exports.handler = async (event) => {
   const { prompt } = JSON.parse(event.body);
 
-  // A legújabb és legmegbízhatóbb modell
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  // A legújabb és legmegbízhatóbb modell - MOST AZ ÚJ API KULCCSAL
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY_NEW);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
 
   try {
