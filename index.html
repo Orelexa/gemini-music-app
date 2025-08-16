@@ -431,6 +431,7 @@
             generateBtn.disabled = true;
             generateBtn.innerHTML = '<span class="loading"></span> Generálás...';
             outputTextarea.value = 'A dalszöveg generálása folyamatban...';
+            outputTextarea.classList.remove('empty');
 
             // Prompt összeállítása
             const prompt = createDetailedPrompt(theme, versesFrom, versesTo, linesPerVerse, maxSyllables, selectedRhymePattern);
@@ -449,6 +450,7 @@
                 if (response.ok) {
                     // Tisztítsuk meg a választ
                     let cleanedText = data.message.trim();
+                    // Minden olyan jel eltávolítása, ami zavaró lehet
                     cleanedText = cleanedText.replace(/\(\w\)/g, ''); // (A), (B) eltávolítása
                     cleanedText = cleanedText.replace(/^\d+\.\s*versszak\s*/gim, ''); // versszak számok
                     cleanedText = cleanedText.trim();
@@ -489,26 +491,21 @@
             const lineCount = selectedLines.length;
             
             const regeneratePrompt = `
-CSAK A KIJELÖLT RÉSZT ÍRD ÁT!
+Írd újra a következő szövegrészt.
+A teljes dalszöveg a következő:
+${lastGeneratedLyrics}
 
-Eredeti szöveg: 
-${outputTextarea.value}
-
-CSAK EZT ÍRD ÁT:
+A kijelölt rész:
 "${selectedText}"
 
-KÖVETELMÉNYEK:
-- PONTOSAN ${lineCount} sor
-- ${maxSyllables} szótag/sor
+Módosítások:
+- A versszakok száma: ${lineCount}
+- A sorok szótagszáma ne haladja meg a ${maxSyllables}-t
 - Rímképlet: ${selectedRhymePattern}
 - Téma: ${theme}
-- Illeszkedjen a környezethez
+- A stílus és hangvétel illeszkedjen az eredeti dalszöveghez.
 
-FONTOS: 
-- Csak a kijelölt részt írd át!
-- NE adj hozzá extra sorokat!
-- NE írj (A), (B) jelöléseket!
-- Tiszta szöveg, semmi más!
+Fontos: Kizárólag a kijelölt részt írd át, és csak a megadott számú sort generáld le. A válaszod CSAK a dalszöveg legyen, semmilyen magyarázó szöveg nem kell!
 `;
 
             try {
@@ -560,163 +557,17 @@ FONTOS:
             
             return outputTextarea.value.substring(start, end);
         }
-
+        
+        // Ezt a funkciót frissítettem a letisztultabb prompt-megközelítéshez
         function createDetailedPrompt(theme, versesFrom, versesTo, linesPerVerse, maxSyllables, rhymePattern) {
-            return `
-Te egy PROFI MAGYAR KÖLTŐ vagy! Írj egy dalszöveget ezekkel a PONTOS követelményekkel:
-
-TÉMA: ${theme}
-
-SZIGORÚ SZABÁLYOK:
-1. Versszakok száma: ${versesFrom}-${versesTo} között
-2. Minden versszak: PONTOSAN ${linesPerVerse} sor
-3. Minden sor: PONTOSAN ${maxSyllables} szótag
-4. Rímképlet: ${rhymePattern}
-
-RÍMKÉPLET MAGYARÁZAT (${rhymePattern}):
-${getSimpleRhymeExplanation(rhymePattern)}
-
-KONKRÉT PÉLDA:
-${getConcreteExample(rhymePattern, maxSyllables)}
-
-RÍMSZAVAK LISTÁJA - HASZNÁLD EZEKET:
-${getRhymeWordPairs()}
-
-LÉPÉSEK:
-1. Válassz rímszavakat a listából
-2. Számold a szótagokat minden sorban
-3. Ellenőrizd a rímképletet
-4. CSAK dalszöveget írj, semmi mást!
-
-FONTOS: 
-- Magyar helyesírás!
-- Értelmes szöveg!
-- TÖKÉLETES rímek!
-- PONTOS szótagszám!
-`;
-        }
-
-        function getSimpleRhymeExplanation(pattern) {
-            switch(pattern) {
-                case 'AABB': return '1-2 sor rímel, 3-4 sor rímel';
-                case 'ABAB': return '1-3 sor rímel, 2-4 sor rímel';
-                case 'AAAB': return '1-2-3 sor rímel, 4 sor más';
-                case 'ABBA': return '1-4 sor rímel, 2-3 sor rímel';
-                default: return 'Kövess a mintát: ' + pattern;
-            }
-        }
-
-        function getConcreteExample(pattern, syllables) {
-            const examples = {
-                'AABB': `
-Példa (${syllables} szótag/sor):
-Szí-vem-ben ég a sze-re-lem (8)
-Ér-ted ér-zek ke-gye-lem (8)
-Ál-ma-im-ban jársz éj-jel (8)
-Lel-kem né-ked min-dig él (8)`,
-                'ABAB': `
-Példa (${syllables} szótag/sor):
-Szí-vem-ben ég a szép-ség (8)
-Ál-ma-im-ban jársz mé-lyen (8)
-Ér-ted ér-zek re-mény-ség (8)
-Lel-kem né-ked él szé-pen (8)`
-            };
-            return examples[pattern] || 'Kövess a rímképletet!';
-        }
-
-        function getRhymeWordPairs() {
-            return `
-JAVASLATOK (válassz belőlük):
-- szerelem, kegyelem, fényelem
-- szépség, reménység, féltékenység  
-- szívem, életem, szerelmem
-- álmok, vágyak, emlékek
-- éjjel, fénnyel, sejtelem
-- szemek, kezek, remegek
-- szavak, álmok, változok
-- fények, árnyak, vágyak
-`;
-        }
-
-        function getRhymeExplanation(pattern) {
-            const explanations = {
-                'AABB': '1. és 2. sor rímeljen egymásra, 3. és 4. sor rímeljen egymásra',
-                'ABAB': '1. és 3. sor rímeljen egymásra, 2. és 4. sor rímeljen egymásra',
-                'AAAB': '1., 2. és 3. sor rímeljen egymásra, 4. sor különböző rím',
-                'ABBA': '1. és 4. sor rímeljen egymásra, 2. és 3. sor rímeljen egymásra',
-                'AABA': '1., 2. és 4. sor rímeljen egymásra, 3. sor különböző rím',
-                'ABCC': '1. sor különböző, 2. sor különböző, 3. és 4. sor rímeljen egymásra',
-                'AAAA': 'Minden sor rímeljen egymásra',
-                'ABCD': 'Minden sor különböző rímmel (nem rímelő)'
-            };
-            return explanations[pattern] || 'Egyedi rímképlet';
-        }
-
-        function getDetailedRhymeRules(pattern, linesPerVerse) {
-            const rules = {
-                'AABB': `
-- 1. sor utolsó szava rímeljen a 2. sor utolsó szavával
-- 3. sor utolsó szava rímeljen a 4. sor utolsó szavával
-- Példa: "szerelem" - "kegyelem", "szívem" - "életem"`,
-                'ABAB': `
-- 1. sor utolsó szava rímeljen a 3. sor utolsó szavával
-- 2. sor utolsó szava rímeljen a 4. sor utolsó szavával
-- Példa: "szépség" - "reménység", "álom" - "bánom"`,
-                'AAAB': `
-- 1., 2. és 3. sor utolsó szava rímeljen egymással
-- 4. sor különböző rím
-- Példa: "szívem" - "életem" - "szerelmem", "álmok"`,
-                'ABBA': `
-- 1. sor utolsó szava rímeljen a 4. sor utolsó szavával
-- 2. sor utolsó szava rímeljen a 3. sor utolsó szavával
-- Példa: "szerelem" - "kegyelem", "szépség" - "reménység"`,
-                'AABA': `
-- 1., 2. és 4. sor utolsó szava rímeljen egymással
-- 3. sor különböző rím
-- Példa: "szívem" - "életem" - "álmok" - "szerelmem"`,
-                'ABCC': `
-- 1. sor egyedi rím
-- 2. sor egyedi rím  
-- 3. és 4. sor rímeljen egymással
-- Példa: "szerelem" - "álmok" - "szépség" - "reménység"`,
-                'AAAA': `
-- Mind a ${linesPerVerse} sor utolsó szava rímeljen egymással
-- Példa: "szívem" - "életem" - "szerelmem" - "kegyelmem"`,
-                'ABCD': `
-- Minden sor különböző rímmel, nem kell rímeljék
-- Szabad versforma`
-            };
-            return rules[pattern] || 'Egyedi rímképlet';
-        }
-
-        function getRhymeExample(pattern, linesPerVerse) {
-            const examples = {
-                'AABB': `
-Példa helyes formátumra:
-Szívemben ég a nagy szerelem,
-Érted érzek mély kegyelem,
-Álmaim közt jársz éjszaka,
-Lelkem néked mindig rabja.`,
-                'ABAB': `
-Példa helyes formátumra:
-Szívemben ég a szépség,
-Álmaim közt jársz mélyen,
-Érted érzek reménység,
-Lelkem néked él szépen.`,
-                'AAAB': `
-Példa helyes formátumra:
-Szívemben ég a szerelem,
-Érted érzek kegyelem,
-Álmaim tele fényelem,
-Lelkem örök rabja.`,
-                'ABBA': `
-Példa helyes formátumra:
-Szívemben ég szerelem,
-Álmaim közt jársz szépen,
-Lelkem érted él mélyen,
-Érted érzek kegyelem.`
-            };
-            return examples[pattern] || 'Példa nem elérhető';
+            const promptParts = [
+                `Írj egy dalszöveget a következő témában: "${theme}".`,
+                `A dalnak ${versesFrom}-${versesTo} versszakból kell állnia, minden versszakban pontosan ${linesPerVerse} sorral.`,
+                `Használj tökéletes rímeket a(z) ${rhymePattern} rímképlet szerint.`,
+                `Minden sor szótagszáma ne haladja meg a ${maxSyllables}-t.`,
+                `Figyelj rá, hogy a sorok ritmikusan illeszkedjenek egymáshoz.`,
+            ];
+            return promptParts.join('\n');
         }
 
         function showRegenerateButton() {
