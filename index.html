@@ -67,6 +67,13 @@
             border-radius: 15px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        
+        .chat-section {
+            background: rgba(40, 40, 40, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
         .section-title {
             color: #bb86fc;
@@ -169,6 +176,46 @@
             color: #9e9e9e;
             font-style: italic;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .chat-box {
+            background: rgba(20, 20, 20, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-message {
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background-color: #3700b3;
+            align-self: flex-end;
+        }
+
+        .gemini-message {
+            background-color: #bb86fc;
+            color: #1a1a2e;
+            align-self: flex-start;
+        }
+
+        .chat-input-container {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-container input {
+            flex-grow: 1;
+            margin-top: 0;
         }
 
         .output-actions {
@@ -403,12 +450,26 @@
                     </button>
                 </div>
             </div>
+            
+            <div class="chat-section">
+                <h2 class="section-title">💬 Chat a Gemini-vel</h2>
+                <div id="chat-box" class="chat-box">
+                    <div class="chat-message gemini-message">
+                        Szia Zsolt! Segíthetek dalszöveget írni? Mesélj a témáról vagy a stílusról!
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" id="chat-input" placeholder="Írj ide a Gemini-nek...">
+                    <button id="send-chat-btn" class="generate-btn" style="width: auto;">Küldés</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         let selectedRhymePattern = 'AABB';
         let lastGeneratedLyrics = '';
+        let chatHistory = [{ role: 'model', parts: [{ text: 'Szia Zsolt! Segíthetek dalszöveget írni? Mesélj a témáról vagy a stílusról!' }] }];
 
         // Rímképlet kiválasztás
         document.querySelectorAll('.rhyme-option').forEach(option => {
@@ -494,7 +555,6 @@
             const theme = document.getElementById('theme').value.trim();
             const maxSyllables = parseInt(document.getElementById('max-syllables').value);
 
-            // Számoljuk meg a kijelölt sorok számát
             const selectedLines = selectedText.split('\n').filter(line => line.trim());
             const lineCount = selectedLines.length;
             
@@ -542,6 +602,58 @@ FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok
             } finally {
                 regenerateBtn.disabled = false;
                 regenerateBtn.textContent = 'Kijelölt Rész Újragenerálása';
+            }
+        });
+
+        // Chat küldése
+        document.getElementById('send-chat-btn').addEventListener('click', async () => {
+            const chatInput = document.getElementById('chat-input');
+            const chatBox = document.getElementById('chat-box');
+            const userMessage = chatInput.value.trim();
+            if (!userMessage) return;
+
+            // Felhasználó üzenetének megjelenítése
+            const userMsgDiv = document.createElement('div');
+            userMsgDiv.className = 'chat-message user-message';
+            userMsgDiv.textContent = userMessage;
+            chatBox.appendChild(userMsgDiv);
+            chatInput.value = '';
+
+            // A chat előzmény hozzáadása a prompt-hoz
+            chatHistory.push({ role: 'user', parts: [{ text: userMessage }] });
+
+            // Prompt küldése a Netlify function-nek
+            try {
+                // A Gemini válaszának helye
+                const geminiMsgDiv = document.createElement('div');
+                geminiMsgDiv.className = 'chat-message gemini-message';
+                geminiMsgDiv.textContent = 'A Gemini válaszol...';
+                chatBox.appendChild(geminiMsgDiv);
+
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify({ prompt: chatHistory.map(h => `${h.role === 'user' ? 'Felhasználó' : 'Gemini'}: ${h.parts[0].text}`).join('\n') }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    geminiMsgDiv.textContent = data.message.trim();
+                    chatHistory.push({ role: 'model', parts: [{ text: data.message.trim() }] });
+                } else {
+                    geminiMsgDiv.textContent = `Hiba: ${data.error}`;
+                }
+            } catch (error) {
+                console.error('Chat hiba:', error);
+                const errorMsgDiv = document.createElement('div');
+                errorMsgDiv.className = 'chat-message gemini-message';
+                errorMsgDiv.textContent = 'Hiba történt a chat során.';
+                chatBox.appendChild(errorMsgDiv);
+            } finally {
+                chatBox.scrollTop = chatBox.scrollHeight;
             }
         });
 
