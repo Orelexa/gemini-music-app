@@ -474,6 +474,12 @@
                 return;
             }
 
+            // Ellenőrizzük, hogy a kijelölt szöveg része-e a dalszövegnek
+            if (!lastGeneratedLyrics.includes(selectedText)) {
+                alert('A kijelölt szöveg nem található a dalszövegben!');
+                return;
+            }
+
             const regenerateBtn = document.getElementById('regenerate-btn');
             const outputDiv = document.getElementById('output');
             
@@ -484,61 +490,43 @@
             const linesPerVerse = parseInt(document.getElementById('lines-per-verse').value);
             const maxSyllables = parseInt(document.getElementById('max-syllables').value);
 
-            // Elemezzük a kijelölt szöveget
+            // Elemezzük a kijelölt szöveget - hány sor?
             const selectedLines = selectedText.split('\n').filter(line => line.trim() !== '');
-            const isFullVerse = selectedLines.length === linesPerVerse;
+            const lineCount = selectedLines.length;
             
-            let regeneratePrompt;
+            // Kontextus elemzés
+            const context = analyzeSelectedContext(selectedText, lastGeneratedLyrics);
             
-            if (isFullVerse) {
-                // Teljes versszak újragenerálása
-                const verseNumber = getVerseNumber(selectedText, lastGeneratedLyrics);
-                regeneratePrompt = `
-TELJES VERSSZAK ÚJRAGENERÁLÁSA
+            const regeneratePrompt = `
+KIJELÖLT SZÖVEGRÉSZ ÚJRAGENERÁLÁSA
 
 Eredeti teljes dalszöveg:
 ${lastGeneratedLyrics}
 
-Újragenerálandó versszak:
+CSAK EZT A RÉSZT GENERÁLD ÚJ:
 "${selectedText}"
 
-Követelmények:
-- PONTOSAN ${linesPerVerse} sor
-- PONTOSAN ${maxSyllables} szótag minden sorban
-- Rímképlet: ${selectedRhymePattern} - ${getRhymeExplanation(selectedRhymePattern)}
+KÖVETELMÉNYEK:
+- PONTOSAN ${lineCount} sor(t) írj
+- Ha teljes sor(ok), akkor ${maxSyllables} szótag soronként
+- Rímképlet: ${selectedRhymePattern}
 - Téma: ${theme}
-- Illeszkedjen a teljes dal hangulatához és stílusához
-- Magyar nyelvű, helyesírási hibák nélkül
+- Illeszkedjen a környező sorokhoz
 
-RÍMSZABÁLYOK:
-${getDetailedRhymeRules(selectedRhymePattern, linesPerVerse)}
+KONTEXTUS INFORMÁCIÓ:
+${context.analysis}
 
-Csak az új versszakot add vissza, semmi mást!
+RÍMANALÍZIS:
+${context.rhymeInfo}
+
+FORMÁTUM SZABÁLYOK:
+- NE írj (A), (B), (C) jelöléseket!
+- NE írj versszak számokat!
+- NE írj extra szöveget!
+- CSAK a kijelölt rész új változatát írd!
+
+FONTOS: PONTOSAN ugyanannyi sort írj, mint amennyi ki volt jelölve!
 `;
-            } else {
-                // Részleges szöveg újragenerálása
-                regeneratePrompt = `
-SZÖVEGRÉSZ ÚJRAGENERÁLÁSA
-
-Eredeti teljes dalszöveg:
-${lastGeneratedLyrics}
-
-Újragenerálandó rész:
-"${selectedText}"
-
-Követelmények:
-- Tartsd meg a sor struktúrát
-- Ha teljes sor, akkor ${maxSyllables} szótag
-- Illeszkedjen a környező rímekhez és hangulathoz
-- Téma: ${theme}
-- Magyar nyelvű, helyesírási hibák nélkül
-
-Kontextus elemzése:
-${analyzeContext(selectedText, lastGeneratedLyrics)}
-
-Csak a kijelölt rész új változatát add vissza, semmi mást!
-`;
-            }
 
             try {
                 const response = await fetch('/.netlify/functions/gemini', {
@@ -552,8 +540,15 @@ Csak a kijelölt rész új változatát add vissza, semmi mást!
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Kijelölt szöveg cseréje
-                    const newText = data.message.trim();
+                    // Tisztítsuk meg a választ
+                    let newText = data.message.trim();
+                    
+                    // Távolítsuk el a lehetséges extra jelöléseket
+                    newText = newText.replace(/\(\w\)/g, ''); // (A), (B) eltávolítása
+                    newText = newText.replace(/^\d+\.\s*versszak\s*/gim, ''); // "1. versszak" eltávolítása
+                    newText = newText.trim();
+                    
+                    // Kijelölt szöveg pontos cseréje
                     const newLyrics = lastGeneratedLyrics.replace(selectedText, newText);
                     lastGeneratedLyrics = newLyrics;
                     outputDiv.innerHTML = newLyrics + '<button class="copy-btn" onclick="copyToClipboard()">Másolás</button>';
@@ -568,34 +563,73 @@ Csak a kijelölt rész új változatát add vissza, semmi mást!
             }
         });
 
-        function getVerseNumber(selectedText, fullLyrics) {
-            const verses = fullLyrics.split('\n\n');
-            for (let i = 0; i < verses.length; i++) {
-                if (verses[i].trim() === selectedText.trim()) {
-                    return i + 1;
-                }
+        function analyzeSelectedContext(selectedText, fullLyrics) {
+            const lines = fullLyrics.split('\n');
+            const selectedStartIndex = findTextPosition(selectedText, fullLyrics);
+            
+            if (selectedStartIndex === -1) {
+                return {
+                    analysis: "Kontextus nem található",
+                    rhymeInfo: "Rím információ nem elérhető"
+                };
             }
-            return 1;
+            
+            const linesPerVerse = parseInt(document.getElementById('lines-per-verse').value);
+            const selectedLines = selectedText.split('\n').filter(line => line.trim());
+            
+            // Melyik versszakban vagyunk?
+            const verseIndex = Math.floor(selectedStartIndex / (linesPerVerse + 1)); // +1 az üres sor miatt
+            const positionInVerse = selectedStartIndex % (linesPerVerse + 1);
+            
+            // Környező sorok keresése
+            const beforeLine = selectedStartIndex > 0 ? lines[selectedStartIndex - 1] : "";
+            const afterIndex = selectedStartIndex + selectedLines.length;
+            const afterLine = afterIndex < lines.length ? lines[afterIndex] : "";
+            
+            // Rím elemzés
+            const rhymeAnalysis = analyzeRhymeContext(selectedLines, positionInVerse, linesPerVerse);
+            
+            return {
+                analysis: `
+Versszak: ${verseIndex + 1}
+Pozíció a versszakban: ${positionInVerse + 1}-${positionInVerse + selectedLines.length}. sor
+Előző sor: "${beforeLine}"
+Következő sor: "${afterLine}"
+Kijelölt sorok száma: ${selectedLines.length}`,
+                rhymeInfo: rhymeAnalysis
+            };
         }
 
-        function analyzeContext(selectedText, fullLyrics) {
+        function findTextPosition(selectedText, fullLyrics) {
             const lines = fullLyrics.split('\n');
-            const selectedIndex = lines.findIndex(line => line.includes(selectedText));
+            const firstSelectedLine = selectedText.split('\n')[0].trim();
             
-            if (selectedIndex === -1) return "Kontextus nem található";
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].trim() === firstSelectedLine) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        function analyzeRhymeContext(selectedLines, positionInVerse, linesPerVerse) {
+            const pattern = selectedRhymePattern;
+            const analysis = [];
             
-            const context = {
-                before: selectedIndex > 0 ? lines[selectedIndex - 1] : "",
-                after: selectedIndex < lines.length - 1 ? lines[selectedIndex + 1] : "",
-                versePosition: (selectedIndex % (parseInt(document.getElementById('lines-per-verse').value) + 1)) + 1
-            };
+            for (let i = 0; i < selectedLines.length; i++) {
+                const linePosition = positionInVerse + i;
+                const rhymeLetter = getRhymeLetterForPosition(linePosition, pattern);
+                analysis.push(`${i + 1}. kijelölt sor (${linePosition + 1}. sor a versszakban): ${rhymeLetter} rím kell`);
+            }
             
-            return `
-Előző sor: "${context.before}"
-Következő sor: "${context.after}"
-Pozíció a versszakban: ${context.versePosition}. sor
-Figyelj a rímre a környező sorokkal!
-`;
+            return analysis.join('\n');
+        }
+
+        function getRhymeLetterForPosition(position, pattern) {
+            if (position >= pattern.length) {
+                position = position % pattern.length;
+            }
+            return pattern[position];
         }
 
         function createDetailedPrompt(theme, versesFrom, versesTo, linesPerVerse, maxSyllables, rhymePattern) {
@@ -604,7 +638,7 @@ Kérlek, írj egy professzionális magyar dalszöveget a következő specifikác
 
 TÉMA ÉS STÍLUS: ${theme}
 
-KRITIKUS KÖVETELMÉNYEK - EZEKET PONTOSAN BETARTANI:
+KRITIKUS KÖVETELMÉNYEK:
 - Versszakok száma: ${versesFrom} és ${versesTo} között
 - Sorok száma versszakonként: PONTOSAN ${linesPerVerse}
 - Szótagszám soronként: PONTOSAN ${maxSyllables} szótag minden sorban
@@ -613,22 +647,23 @@ KRITIKUS KÖVETELMÉNYEK - EZEKET PONTOSAN BETARTANI:
 RÍMSZABÁLYOK (NAGYON FONTOS):
 ${getDetailedRhymeRules(rhymePattern, linesPerVerse)}
 
-PÉLDA A RÍMKÉPLETRE (${rhymePattern}):
+PÉLDA A HELYES FORMÁTUMRA:
 ${getRhymeExample(rhymePattern, linesPerVerse)}
 
 NYELVI KÖVETELMÉNYEK:
 - Magyar nyelvű, kifogástalan helyesírással
-- Költői, értelmes szöveg, de a rímek FONTOSABBAK
+- Értelmes, költői szöveg
 - Minden sor végén erős, tiszta rím
 - A szótagszámolás PONTOS legyen
-- Természetes szórend, de a rím az elsődleges
+- Természetes szórend
 
-STRUKTÚRA:
+FORMÁTUM SZABÁLYOK:
+- NE írj (A), (B), (C) jelöléseket a sorok végére!
 - Minden versszakot üres sorral válassz el
-- Számozd a versszakokat (1. versszak, 2. versszak, stb.)
-- A rímképlet MINDEN versszakban UGYANAZ legyen
+- NE számozd a versszakokat
+- Csak tiszta dalszöveget írj, semmi extra jelölést
 
-FONTOS: Először gondolj a rímszavakra, majd építsd fel a sorokat!
+FONTOS: A sorok végén SOHA ne legyen rímjelölés! Csak a tiszta szöveget írd!
 `;
         }
 
@@ -649,29 +684,29 @@ FONTOS: Először gondolj a rímszavakra, majd építsd fel a sorokat!
         function getDetailedRhymeRules(pattern, linesPerVerse) {
             const rules = {
                 'AABB': `
-- 1. sor utolsó szava rímeljen a 2. sor utolsó szavával (A-A)
-- 3. sor utolsó szava rímeljen a 4. sor utolsó szavával (B-B)
+- 1. sor utolsó szava rímeljen a 2. sor utolsó szavával
+- 3. sor utolsó szava rímeljen a 4. sor utolsó szavával
 - Példa: "szerelem" - "kegyelem", "szívem" - "életem"`,
                 'ABAB': `
-- 1. sor utolsó szava rímeljen a 3. sor utolsó szavával (A-A)
-- 2. sor utolsó szava rímeljen a 4. sor utolsó szavával (B-B)
+- 1. sor utolsó szava rímeljen a 3. sor utolsó szavával
+- 2. sor utolsó szava rímeljen a 4. sor utolsó szavával
 - Példa: "szépség" - "reménység", "álom" - "bánom"`,
                 'AAAB': `
-- 1., 2. és 3. sor utolsó szava rímeljen egymással (A-A-A)
-- 4. sor különböző rím (B)
+- 1., 2. és 3. sor utolsó szava rímeljen egymással
+- 4. sor különböző rím
 - Példa: "szívem" - "életem" - "szerelmem", "álmok"`,
                 'ABBA': `
-- 1. sor utolsó szava rímeljen a 4. sor utolsó szavával (A-A)
-- 2. sor utolsó szava rímeljen a 3. sor utolsó szavával (B-B)
+- 1. sor utolsó szava rímeljen a 4. sor utolsó szavával
+- 2. sor utolsó szava rímeljen a 3. sor utolsó szavával
 - Példa: "szerelem" - "kegyelem", "szépség" - "reménység"`,
                 'AABA': `
-- 1., 2. és 4. sor utolsó szava rímeljen egymással (A-A-A)
-- 3. sor különböző rím (B)
+- 1., 2. és 4. sor utolsó szava rímeljen egymással
+- 3. sor különböző rím
 - Példa: "szívem" - "életem" - "álmok" - "szerelmem"`,
                 'ABCC': `
-- 1. sor egyedi rím (A)
-- 2. sor egyedi rím (B)
-- 3. és 4. sor rímeljen egymással (C-C)
+- 1. sor egyedi rím
+- 2. sor egyedi rím  
+- 3. és 4. sor rímeljen egymással
 - Példa: "szerelem" - "álmok" - "szépség" - "reménység"`,
                 'AAAA': `
 - Mind a ${linesPerVerse} sor utolsó szava rímeljen egymással
@@ -686,29 +721,29 @@ FONTOS: Először gondolj a rímszavakra, majd építsd fel a sorokat!
         function getRhymeExample(pattern, linesPerVerse) {
             const examples = {
                 'AABB': `
-1. versszak példa (A-A-B-B):
-"Szívemben ég a nagy szerelem, (A)
-Érted érzek mély kegyelem, (A)
-Álmaim közt jársz éjszaka, (B)
-Lelkem néked mindig rabja." (B)`,
+Példa helyes formátumra:
+Szívemben ég a nagy szerelem,
+Érted érzek mély kegyelem,
+Álmaim közt jársz éjszaka,
+Lelkem néked mindig rabja.`,
                 'ABAB': `
-1. versszak példa (A-B-A-B):
-"Szívemben ég a szépség, (A)
-Álmaim közt jársz mélyen, (B)
-Érted érzek reménység, (A)
-Lelkem néked él szépen." (B)`,
+Példa helyes formátumra:
+Szívemben ég a szépség,
+Álmaim közt jársz mélyen,
+Érted érzek reménység,
+Lelkem néked él szépen.`,
                 'AAAB': `
-1. versszak példa (A-A-A-B):
-"Szívemben ég a szerelem, (A)
-Érted érzek kegyelem, (A)
-Álmaim tele fényelem, (A)
-Lelkem örök rabja." (B)`,
+Példa helyes formátumra:
+Szívemben ég a szerelem,
+Érted érzek kegyelem,
+Álmaim tele fényelem,
+Lelkem örök rabja.`,
                 'ABBA': `
-1. versszak példa (A-B-B-A):
-"Szívemben ég szerelem, (A)
-Álmaim közt jársz szépen, (B)
-Lelkem érted él mélyen, (B)
-Érted érzek kegyelem." (A)`
+Példa helyes formátumra:
+Szívemben ég szerelem,
+Álmaim közt jársz szépen,
+Lelkem érted él mélyen,
+Érted érzek kegyelem.`
             };
             return examples[pattern] || 'Példa nem elérhető';
         }
