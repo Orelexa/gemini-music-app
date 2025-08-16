@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Zenei Stúdió Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+            background-size: 300% 100%;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+            color: #2c3e50;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .genre-select, .mood-select {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .genre-option, .mood-option {
+            padding: 10px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            background: white;
+            color: #2c3e50;
+        }
+
+        .genre-option:hover, .mood-option:hover {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .genre-option.selected, .mood-option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .generate-btn.loading {
+            pointer-events: none;
+        }
+
+        .generate-btn.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .output-section {
+            margin-top: 30px;
+        }
+
+        .output-box {
+            background: #f8f9fa;
+            border: 2px solid #e1e8ed;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: left;
+            min-height: 200px;
+            white-space: pre-wrap;
+            color: #2c3e50;
+            line-height: 1.6;
+            font-size: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .output-box.empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #95a5a6;
+            font-style: italic;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .output-box:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .history-section {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .history-item {
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .history-prompt {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .history-preview {
+            color: #7f8c8d;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: #f1f3f4;
+            border-radius: 15px;
+            padding: 5px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .genre-select, .mood-select {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 Gemini Zenei Stúdió Pro</h1>
+            <p class="subtitle">Alkotj egyedi dalszövegeket mesterséges intelligencia segítségével</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('generator')">Dalszöveg Generátor</button>
+            <button class="tab" onclick="switchTab('history')">Előzmények</button>
+        </div>
+
+        <div id="generator" class="tab-content active">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="lyrics-prompt">Téma vagy történet:</label>
+                    <textarea id="lyrics-prompt" rows="3" placeholder="Például: Egy elveszett szerelem története, nyári kalandok, motivációs dal az álmokról..."></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>Válassz műfajt:</label>
+                    <div class="genre-select">
+                        <div class="genre-option" data-genre="pop">Pop</div>
+                        <div class="genre-option" data-genre="rock">Rock</div>
+                        <div class="genre-option" data-genre="rap">Rap/Hip-Hop</div>
+                        <div class="genre-option" data-genre="folk">Folk</div>
+                        <div class="genre-option" data-genre="blues">Blues</div>
+                        <div class="genre-option" data-genre="electronic">Electronic</div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Hangulat:</label>
+                    <div class="mood-select">
+                        <div class="mood-option" data-mood="boldog">Boldog</div>
+                        <div class="mood-option" data-mood="szomorú">Szomorú</div>
+                        <div class="mood-option" data-mood="energikus">Energikus</div>
+                        <div class="mood-option" data-mood="romantikus">Romantikus</div>
+                        <div class="mood-option" data-mood="motivációs">Motivációs</div>
+                        <div class="mood-option" data-mood="nosztalgikus">Nosztalgikus</div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="language">Nyelv:</label>
+                    <select id="language">
+                        <option value="magyar">Magyar</option>
+                        <option value="angol">Angol</option>
+                        <option value="német">Német</option>
+                        <option value="francia">Francia</option>
+                    </select>
+                </div>
+
+                <button id="generate-lyrics-button" class="generate-btn">
+                    Dalszöveg Generálása
+                </button>
+            </div>
+
+            <div class="output-section">
+                <div id="lyrics-output" class="output-box empty">
+                    Itt fog megjelenni a generált dalszöveg...
+                    <button class="copy-btn" onclick="copyToClipboard()">Másolás</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="history" class="tab-content">
+            <div class="history-section">
+                <h3>Korábbi dalszövegek</h3>
+                <div id="history-list">
+                    <!-- History items will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedGenre = '';
+        let selectedMood = '';
+        let history = JSON.parse(localStorage.getItem('lyricsHistory') || '[]');
+
+        // Genre selection
+        document.querySelectorAll('.genre-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.genre-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedGenre = this.getAttribute('data-genre');
+            });
+        });
+
+        // Mood selection
+        document.querySelectorAll('.mood-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.mood-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedMood = this.getAttribute('data-mood');
+            });
+        });
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if (tabName === 'history') {
+                loadHistory();
+            }
+        }
+
+        // Generate lyrics
+        document.getElementById('generate-lyrics-button').addEventListener('click', async () => {
+            const prompt = document.getElementById('lyrics-prompt').value;
+            const language = document.getElementById('language').value;
+            const outputDiv = document.getElementById('lyrics-output');
+            const button = document.getElementById('generate-lyrics-button');
+
+            if (!prompt.trim()) {
+                alert('Kérlek, adj meg egy témát!');
+                return;
+            }
+
+            // Enhanced prompt with genre and mood
+            let enhancedPrompt = `Írj egy ${language} nyelvű dalszöveget a következő témáról: ${prompt}`;
+            
+            if (selectedGenre) {
+                enhancedPrompt += ` Műfaj: ${selectedGenre}.`;
+            }
+            
+            if (selectedMood) {
+                enhancedPrompt += ` Hangulat: ${selectedMood}.`;
+            }
+            
+            enhancedPrompt += ' A dalszöveg legyen kreatív, érzelmes és jól strukturált versszakokkal és refrénnel.';
+
+            button.classList.add('loading');
+            button.textContent = 'Generálás...';
+            outputDiv.className = 'output-box';
+            outputDiv.textContent = 'A dalszöveg generálása folyamatban...';
+
+            try {
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify({ prompt: enhancedPrompt }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+
+                if (response.ok) {
+                    outputDiv.innerHTML = data.message + '<button class="copy-btn" onclick="copyToClipboard()">Másolás</button>';
+                    
+                    // Save to history
+                    const historyItem = {
+                        id: Date.now(),
+                        prompt: prompt,
+                        genre: selectedGenre,
+                        mood: selectedMood,
+                        language: language,
+                        lyrics: data.message,
+                        timestamp: new Date().toLocaleString('hu-HU')
+                    };
+                    
+                    history.unshift(historyItem);
+                    if (history.length > 20) history.pop(); // Keep only last 20
+                    localStorage.setItem('lyricsHistory', JSON.stringify(history));
+                    
+                } else {
+                    outputDiv.textContent = `Hiba: ${data.error}`;
+                    outputDiv.className = 'output-box';
+                }
+            } catch (error) {
+                outputDiv.textContent = `Hiba: ${error.message}`;
+                outputDiv.className = 'output-box';
+            } finally {
+                button.classList.remove('loading');
+                button.textContent = 'Dalszöveg Generálása';
+            }
+        });
+
+        // Copy to clipboard
+        function copyToClipboard() {
+            const outputDiv = document.getElementById('lyrics-output');
+            const text = outputDiv.textContent.replace('Másolás', '').trim();
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const copyBtn = outputDiv.querySelector('.copy-btn');
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Másolva!';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        // Load history
+        function loadHistory() {
+            const historyList = document.getElementById('history-list');
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: #95a5a6;">Még nincsenek mentett dalszövegek.</p>';
+                return;
+            }
+            
+            historyList.innerHTML = history.map(item => `
+                <div class="history-item" onclick="loadFromHistory(${item.id})">
+                    <div class="history-prompt">${item.prompt}</div>
+                    <div class="history-preview">${item.lyrics.substring(0, 100)}...</div>
+                    <small style="color: #95a5a6;">${item.timestamp} • ${item.genre || 'Nincs műfaj'} • ${item.mood || 'Nincs hangulat'}</small>
+                </div>
+            `).join('');
+        }
+
+        // Load from history
+        function loadFromHistory(id) {
+            const item = history.find(h => h.id === id);
+            if (item) {
+                // Switch to generator tab
+                switchTab('generator');
+                document.querySelector('.tab').click();
+                
+                // Fill in the form
+                document.getElementById('lyrics-prompt').value = item.prompt;
+                document.getElementById('language').value = item.language;
+                
+                // Set genre and mood
+                if (item.genre) {
+                    document.querySelectorAll('.genre-option').forEach(o => o.classList.remove('selected'));
+                    const genreOption = document.querySelector(`[data-genre="${item.genre}"]`);
+                    if (genreOption) {
+                        genreOption.classList.add('selected');
+                        selectedGenre = item.genre;
+                    }
+                }
+                
+                if (item.mood) {
+                    document.querySelectorAll('.mood-option').forEach(o => o.classList.remove('selected'));
+                    const moodOption = document.querySelector(`[data-mood="${item.mood}"]`);
+                    if (moodOption) {
+                        moodOption.classList.add('selected');
+                        selectedMood = item.mood;
+                    }
+                }
+                
+                // Show the lyrics
+                const outputDiv = document.getElementById('lyrics-output');
+                outputDiv.className = 'output-box';
+                outputDiv.innerHTML = item.lyrics + '<button class="copy-btn" onclick="copyToClipboard()">Másolás</button>';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHistory();
+        });
+    </script>
+</body>
+</html>
