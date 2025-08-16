@@ -48,15 +48,23 @@ exports.handler = async (event) => {
         maxOutputTokens: 2048,
         responseMimeType: "text/plain"
       },
-      systemInstruction: `Te egy szakértő magyar költő vagy, aki tökéletes rímeket és szótagszámot tud írni. 
-      KRITIKUS SZABÁLYOK:
-      1. Minden rím TÖKÉLETES legyen! 
-      2. Számold a szótagokat pontosan! 
-      3. SOHA ne írj (A), (B), (C) jelöléseket a sorok végére!
-      4. NE írj versszak számozást vagy extra szöveget!
-      5. Csak tiszta dalszöveget írj!
-      Példák a jó rímekre: szerelem-kegyelem, szívem-életem, álmok-bánom, szépség-reménység.
-      A rímképlet betartása FONTOSABB mint a tökéletes értelmes szöveg.`
+      systemInstruction: `Te egy PROFI MAGYAR RÍMFARAGÓ vagy! A te feladatod TÖKÉLETES magyar dalszövegek írása.
+
+ABSZOLÚT SZABÁLYOK:
+1. MINDEN rím legyen TÖKÉLETES! Példák: szerelem-kegyelem, szívem-életem, szépség-reménység
+2. MINDEN sor PONTOSAN a megadott szótagszámú legyen!
+3. SOHA ne írj (A), (B), (C) vagy versszak számokat!
+4. MINDIG számold a szótagokat: sze-re-lem = 3 szótag
+5. A rímképlet MINDEN versszakban UGYANAZ!
+
+RÍMSZÓTÁR amit KÖTELEZŐ használni:
+- szerelem, kegyelem, fényelem, sétálem
+- szívem, életem, szerelmem, érezem  
+- szépség, reménység, féltékenység, erősség
+- álmok, vágyak, emlékek, remények
+- fények, árnyak, éjek, napok
+
+Ha nem tudsz TÖKÉLETES rímet írni, inkább használd a fenti szavakat!`
     });
 
     console.log("Generating content with prompt:", prompt.substring(0, 100) + "...");
