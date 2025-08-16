@@ -387,10 +387,8 @@
             <div class="output-section">
                 <h2 class="section-title">📝 Generált Dalszöveg</h2>
                 
-                <div id="output" class="output-box empty">
-                    Itt fog megjelenni a generált dalszöveg...
-                    <button class="copy-btn" onclick="copyToClipboard()">Másolás</button>
-                </div>
+                <textarea id="output" class="output-box empty" placeholder="Itt fog megjelenni a generált dalszöveg...&#10;&#10;A szöveget itt közvetlenül szerkesztheted is!"></textarea>
+                <button class="copy-btn" onclick="copyToClipboard()" style="position: absolute; top: 15px; right: 15px; opacity: 0; transition: opacity 0.3s;">Másolás</button>
 
                 <button id="regenerate-btn" class="regenerate-btn" style="display: none;">
                     Kijelölt Rész Újragenerálása
@@ -415,7 +413,7 @@
         // Dalszöveg generálás
         document.getElementById('generate-btn').addEventListener('click', async () => {
             const generateBtn = document.getElementById('generate-btn');
-            const outputDiv = document.getElementById('output');
+            const outputTextarea = document.getElementById('output');
             
             // Input értékek összegyűjtése
             const theme = document.getElementById('theme').value.trim();
@@ -432,8 +430,7 @@
             // Gomb letiltása és loading állapot
             generateBtn.disabled = true;
             generateBtn.innerHTML = '<span class="loading"></span> Generálás...';
-            outputDiv.className = 'output-box';
-            outputDiv.textContent = 'A dalszöveg generálása folyamatban...';
+            outputTextarea.value = 'A dalszöveg generálása folyamatban...';
 
             // Prompt összeállítása
             const prompt = createDetailedPrompt(theme, versesFrom, versesTo, linesPerVerse, maxSyllables, selectedRhymePattern);
@@ -450,14 +447,20 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    lastGeneratedLyrics = data.message;
-                    outputDiv.innerHTML = data.message + '<button class="copy-btn" onclick="copyToClipboard()">Másolás</button>';
+                    // Tisztítsuk meg a választ
+                    let cleanedText = data.message.trim();
+                    cleanedText = cleanedText.replace(/\(\w\)/g, ''); // (A), (B) eltávolítása
+                    cleanedText = cleanedText.replace(/^\d+\.\s*versszak\s*/gim, ''); // versszak számok
+                    cleanedText = cleanedText.trim();
+                    
+                    lastGeneratedLyrics = cleanedText;
+                    outputTextarea.value = cleanedText;
                     showRegenerateButton();
                 } else {
-                    outputDiv.textContent = `Hiba: ${data.error}`;
+                    outputTextarea.value = `Hiba: ${data.error}`;
                 }
             } catch (error) {
-                outputDiv.textContent = `Hiba: ${error.message}`;
+                outputTextarea.value = `Hiba: ${error.message}`;
             } finally {
                 generateBtn.disabled = false;
                 generateBtn.textContent = 'Dalszöveg Generálása';
@@ -466,66 +469,46 @@
 
         // Újragenerálás funkció
         document.getElementById('regenerate-btn').addEventListener('click', async () => {
-            const selection = window.getSelection();
-            const selectedText = selection.toString().trim();
+            const outputTextarea = document.getElementById('output');
+            const selectedText = getSelectedText();
             
             if (!selectedText) {
                 alert('Kérlek, jelölj ki egy szövegrészt az újrageneráláshoz!');
                 return;
             }
 
-            // Ellenőrizzük, hogy a kijelölt szöveg része-e a dalszövegnek
-            if (!lastGeneratedLyrics.includes(selectedText)) {
-                alert('A kijelölt szöveg nem található a dalszövegben!');
-                return;
-            }
-
             const regenerateBtn = document.getElementById('regenerate-btn');
-            const outputDiv = document.getElementById('output');
-            
             regenerateBtn.disabled = true;
             regenerateBtn.innerHTML = '<span class="loading"></span> Újragenerálás...';
 
             const theme = document.getElementById('theme').value.trim();
-            const linesPerVerse = parseInt(document.getElementById('lines-per-verse').value);
             const maxSyllables = parseInt(document.getElementById('max-syllables').value);
 
-            // Elemezzük a kijelölt szöveget - hány sor?
-            const selectedLines = selectedText.split('\n').filter(line => line.trim() !== '');
+            // Számoljuk meg a kijelölt sorok számát
+            const selectedLines = selectedText.split('\n').filter(line => line.trim());
             const lineCount = selectedLines.length;
             
-            // Kontextus elemzés
-            const context = analyzeSelectedContext(selectedText, lastGeneratedLyrics);
-            
             const regeneratePrompt = `
-KIJELÖLT SZÖVEGRÉSZ ÚJRAGENERÁLÁSA
+CSAK A KIJELÖLT RÉSZT ÍRD ÁT!
 
-Eredeti teljes dalszöveg:
-${lastGeneratedLyrics}
+Eredeti szöveg: 
+${outputTextarea.value}
 
-CSAK EZT A RÉSZT GENERÁLD ÚJ:
+CSAK EZT ÍRD ÁT:
 "${selectedText}"
 
 KÖVETELMÉNYEK:
-- PONTOSAN ${lineCount} sor(t) írj
-- Ha teljes sor(ok), akkor ${maxSyllables} szótag soronként
+- PONTOSAN ${lineCount} sor
+- ${maxSyllables} szótag/sor
 - Rímképlet: ${selectedRhymePattern}
 - Téma: ${theme}
-- Illeszkedjen a környező sorokhoz
+- Illeszkedjen a környezethez
 
-KONTEXTUS INFORMÁCIÓ:
-${context.analysis}
-
-RÍMANALÍZIS:
-${context.rhymeInfo}
-
-FORMÁTUM SZABÁLYOK:
-- NE írj (A), (B), (C) jelöléseket!
-- NE írj versszak számokat!
-- NE írj extra szöveget!
-- CSAK a kijelölt rész új változatát írd!
-
-FONTOS: PONTOSAN ugyanannyi sort írj, mint amennyi ki volt jelölve!
+FONTOS: 
+- Csak a kijelölt részt írd át!
+- NE adj hozzá extra sorokat!
+- NE írj (A), (B) jelöléseket!
+- Tiszta szöveg, semmi más!
 `;
 
             try {
@@ -542,16 +525,19 @@ FONTOS: PONTOSAN ugyanannyi sort írj, mint amennyi ki volt jelölve!
                 if (response.ok) {
                     // Tisztítsuk meg a választ
                     let newText = data.message.trim();
-                    
-                    // Távolítsuk el a lehetséges extra jelöléseket
-                    newText = newText.replace(/\(\w\)/g, ''); // (A), (B) eltávolítása
-                    newText = newText.replace(/^\d+\.\s*versszak\s*/gim, ''); // "1. versszak" eltávolítása
+                    newText = newText.replace(/\(\w\)/g, '');
+                    newText = newText.replace(/^\d+\.\s*versszak\s*/gim, '');
                     newText = newText.trim();
                     
-                    // Kijelölt szöveg pontos cseréje
-                    const newLyrics = lastGeneratedLyrics.replace(selectedText, newText);
-                    lastGeneratedLyrics = newLyrics;
-                    outputDiv.innerHTML = newLyrics + '<button class="copy-btn" onclick="copyToClipboard()">Másolás</button>';
+                    // Csak az első N sort vesszük, amennyit kijelöltünk
+                    const newLines = newText.split('\n').slice(0, lineCount);
+                    const finalNewText = newLines.join('\n');
+                    
+                    // Szöveg cseréje
+                    const currentText = outputTextarea.value;
+                    const newFullText = currentText.replace(selectedText, finalNewText);
+                    outputTextarea.value = newFullText;
+                    lastGeneratedLyrics = newFullText;
                 } else {
                     alert(`Hiba az újragenerálásban: ${data.error}`);
                 }
@@ -563,107 +549,92 @@ FONTOS: PONTOSAN ugyanannyi sort írj, mint amennyi ki volt jelölve!
             }
         });
 
-        function analyzeSelectedContext(selectedText, fullLyrics) {
-            const lines = fullLyrics.split('\n');
-            const selectedStartIndex = findTextPosition(selectedText, fullLyrics);
+        function getSelectedText() {
+            const outputTextarea = document.getElementById('output');
+            const start = outputTextarea.selectionStart;
+            const end = outputTextarea.selectionEnd;
             
-            if (selectedStartIndex === -1) {
-                return {
-                    analysis: "Kontextus nem található",
-                    rhymeInfo: "Rím információ nem elérhető"
-                };
+            if (start === end) {
+                return '';
             }
             
-            const linesPerVerse = parseInt(document.getElementById('lines-per-verse').value);
-            const selectedLines = selectedText.split('\n').filter(line => line.trim());
-            
-            // Melyik versszakban vagyunk?
-            const verseIndex = Math.floor(selectedStartIndex / (linesPerVerse + 1)); // +1 az üres sor miatt
-            const positionInVerse = selectedStartIndex % (linesPerVerse + 1);
-            
-            // Környező sorok keresése
-            const beforeLine = selectedStartIndex > 0 ? lines[selectedStartIndex - 1] : "";
-            const afterIndex = selectedStartIndex + selectedLines.length;
-            const afterLine = afterIndex < lines.length ? lines[afterIndex] : "";
-            
-            // Rím elemzés
-            const rhymeAnalysis = analyzeRhymeContext(selectedLines, positionInVerse, linesPerVerse);
-            
-            return {
-                analysis: `
-Versszak: ${verseIndex + 1}
-Pozíció a versszakban: ${positionInVerse + 1}-${positionInVerse + selectedLines.length}. sor
-Előző sor: "${beforeLine}"
-Következő sor: "${afterLine}"
-Kijelölt sorok száma: ${selectedLines.length}`,
-                rhymeInfo: rhymeAnalysis
-            };
-        }
-
-        function findTextPosition(selectedText, fullLyrics) {
-            const lines = fullLyrics.split('\n');
-            const firstSelectedLine = selectedText.split('\n')[0].trim();
-            
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].trim() === firstSelectedLine) {
-                    return i;
-                }
-            }
-            return -1;
-        }
-
-        function analyzeRhymeContext(selectedLines, positionInVerse, linesPerVerse) {
-            const pattern = selectedRhymePattern;
-            const analysis = [];
-            
-            for (let i = 0; i < selectedLines.length; i++) {
-                const linePosition = positionInVerse + i;
-                const rhymeLetter = getRhymeLetterForPosition(linePosition, pattern);
-                analysis.push(`${i + 1}. kijelölt sor (${linePosition + 1}. sor a versszakban): ${rhymeLetter} rím kell`);
-            }
-            
-            return analysis.join('\n');
-        }
-
-        function getRhymeLetterForPosition(position, pattern) {
-            if (position >= pattern.length) {
-                position = position % pattern.length;
-            }
-            return pattern[position];
+            return outputTextarea.value.substring(start, end);
         }
 
         function createDetailedPrompt(theme, versesFrom, versesTo, linesPerVerse, maxSyllables, rhymePattern) {
             return `
-Kérlek, írj egy professzionális magyar dalszöveget a következő specifikációk alapján:
+Te egy PROFI MAGYAR KÖLTŐ vagy! Írj egy dalszöveget ezekkel a PONTOS követelményekkel:
 
-TÉMA ÉS STÍLUS: ${theme}
+TÉMA: ${theme}
 
-KRITIKUS KÖVETELMÉNYEK:
-- Versszakok száma: ${versesFrom} és ${versesTo} között
-- Sorok száma versszakonként: PONTOSAN ${linesPerVerse}
-- Szótagszám soronként: PONTOSAN ${maxSyllables} szótag minden sorban
-- Rímképlet: ${rhymePattern} - ${getRhymeExplanation(rhymePattern)}
+SZIGORÚ SZABÁLYOK:
+1. Versszakok száma: ${versesFrom}-${versesTo} között
+2. Minden versszak: PONTOSAN ${linesPerVerse} sor
+3. Minden sor: PONTOSAN ${maxSyllables} szótag
+4. Rímképlet: ${rhymePattern}
 
-RÍMSZABÁLYOK (NAGYON FONTOS):
-${getDetailedRhymeRules(rhymePattern, linesPerVerse)}
+RÍMKÉPLET MAGYARÁZAT (${rhymePattern}):
+${getSimpleRhymeExplanation(rhymePattern)}
 
-PÉLDA A HELYES FORMÁTUMRA:
-${getRhymeExample(rhymePattern, linesPerVerse)}
+KONKRÉT PÉLDA:
+${getConcreteExample(rhymePattern, maxSyllables)}
 
-NYELVI KÖVETELMÉNYEK:
-- Magyar nyelvű, kifogástalan helyesírással
-- Értelmes, költői szöveg
-- Minden sor végén erős, tiszta rím
-- A szótagszámolás PONTOS legyen
-- Természetes szórend
+RÍMSZAVAK LISTÁJA - HASZNÁLD EZEKET:
+${getRhymeWordPairs()}
 
-FORMÁTUM SZABÁLYOK:
-- NE írj (A), (B), (C) jelöléseket a sorok végére!
-- Minden versszakot üres sorral válassz el
-- NE számozd a versszakokat
-- Csak tiszta dalszöveget írj, semmi extra jelölést
+LÉPÉSEK:
+1. Válassz rímszavakat a listából
+2. Számold a szótagokat minden sorban
+3. Ellenőrizd a rímképletet
+4. CSAK dalszöveget írj, semmi mást!
 
-FONTOS: A sorok végén SOHA ne legyen rímjelölés! Csak a tiszta szöveget írd!
+FONTOS: 
+- Magyar helyesírás!
+- Értelmes szöveg!
+- TÖKÉLETES rímek!
+- PONTOS szótagszám!
+`;
+        }
+
+        function getSimpleRhymeExplanation(pattern) {
+            switch(pattern) {
+                case 'AABB': return '1-2 sor rímel, 3-4 sor rímel';
+                case 'ABAB': return '1-3 sor rímel, 2-4 sor rímel';
+                case 'AAAB': return '1-2-3 sor rímel, 4 sor más';
+                case 'ABBA': return '1-4 sor rímel, 2-3 sor rímel';
+                default: return 'Kövess a mintát: ' + pattern;
+            }
+        }
+
+        function getConcreteExample(pattern, syllables) {
+            const examples = {
+                'AABB': `
+Példa (${syllables} szótag/sor):
+Szí-vem-ben ég a sze-re-lem (8)
+Ér-ted ér-zek ke-gye-lem (8)
+Ál-ma-im-ban jársz éj-jel (8)
+Lel-kem né-ked min-dig él (8)`,
+                'ABAB': `
+Példa (${syllables} szótag/sor):
+Szí-vem-ben ég a szép-ség (8)
+Ál-ma-im-ban jársz mé-lyen (8)
+Ér-ted ér-zek re-mény-ség (8)
+Lel-kem né-ked él szé-pen (8)`
+            };
+            return examples[pattern] || 'Kövess a rímképletet!';
+        }
+
+        function getRhymeWordPairs() {
+            return `
+JAVASLATOK (válassz belőlük):
+- szerelem, kegyelem, fényelem
+- szépség, reménység, féltékenység  
+- szívem, életem, szerelmem
+- álmok, vágyak, emlékek
+- éjjel, fénnyel, sejtelem
+- szemek, kezek, remegek
+- szavak, álmok, változok
+- fények, árnyak, vágyak
 `;
         }
 
@@ -753,11 +724,11 @@ Lelkem érted él mélyen,
         }
 
         function copyToClipboard() {
-            const outputDiv = document.getElementById('output');
-            const text = outputDiv.textContent.replace('Másolás', '').trim();
+            const outputTextarea = document.getElementById('output');
+            const text = outputTextarea.value;
             
             navigator.clipboard.writeText(text).then(() => {
-                const copyBtn = outputDiv.querySelector('.copy-btn');
+                const copyBtn = document.querySelector('.copy-btn');
                 const originalText = copyBtn.textContent;
                 copyBtn.textContent = 'Másolva!';
                 setTimeout(() => {
@@ -765,6 +736,11 @@ Lelkem érted él mélyen,
                 }, 2000);
             });
         }
+
+        // Textarea figyelése a változásokért
+        document.getElementById('output').addEventListener('input', function() {
+            lastGeneratedLyrics = this.value;
+        });
 
         // Versszak tartomány validáció
         document.getElementById('verses-from').addEventListener('change', function() {
