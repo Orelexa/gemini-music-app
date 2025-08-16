@@ -48,23 +48,8 @@ exports.handler = async (event) => {
         maxOutputTokens: 2048,
         responseMimeType: "text/plain"
       },
-      systemInstruction: `Te egy PROFI MAGYAR RÍMFARAGÓ vagy! A te feladatod TÖKÉLETES magyar dalszövegek írása.
-
-ABSZOLÚT SZABÁLYOK:
-1. MINDEN rím legyen TÖKÉLETES! Példák: szerelem-kegyelem, szívem-életem, szépség-reménység
-2. MINDEN sor PONTOSAN a megadott szótagszámú legyen!
-3. SOHA ne írj (A), (B), (C) vagy versszak számokat!
-4. MINDIG számold a szótagokat: sze-re-lem = 3 szótag
-5. A rímképlet MINDEN versszakban UGYANAZ!
-
-RÍMSZÓTÁR amit KÖTELEZŐ használni:
-- szerelem, kegyelem, fényelem, sétálem
-- szívem, életem, szerelmem, érezem  
-- szépség, reménység, féltékenység, erősség
-- álmok, vágyak, emlékek, remények
-- fények, árnyak, éjek, napok
-
-Ha nem tudsz TÖKÉLETES rímet írni, inkább használd a fenti szavakat!`
+      // Egyszerűsített systemInstruction a hatékonyabb rímelés érdekében
+      systemInstruction: `Te egy PROFI MAGYAR KÖLTŐ vagy, aki dalszövegeket ír. A dalszövegeknek mély érzelmeket kell közvetíteniük, tökéletes rímekkel, és szigorúan követniük kell a kért versformátumot. A feladatod, hogy a megadott téma, stílus és szerkezet alapján a legjobb minőségű dalszöveget készítsd el, amely magával ragadó és hibátlan. Ne írj kiegészítő szöveget a dalszöveg elé vagy után. Kizárólag a dalszöveg legyen a válaszod.`
     });
 
     console.log("Generating content with prompt:", prompt.substring(0, 100) + "...");
