@@ -433,7 +433,7 @@
             outputTextarea.value = 'A dalszöveg generálása folyamatban...';
             outputTextarea.classList.remove('empty');
 
-            // Prompt összeállítása
+            // Prompt összeállítása - A prompt most rövidebb és tömörebb
             const prompt = createDetailedPrompt(theme, versesFrom, versesTo, linesPerVerse, maxSyllables, selectedRhymePattern);
 
             try {
@@ -448,9 +448,7 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Tisztítsuk meg a választ
                     let cleanedText = data.message.trim();
-                    // Minden olyan jel eltávolítása, ami zavaró lehet
                     cleanedText = cleanedText.replace(/\(\w\)/g, ''); // (A), (B) eltávolítása
                     cleanedText = cleanedText.replace(/^\d+\.\s*versszak\s*/gim, ''); // versszak számok
                     cleanedText = cleanedText.trim();
@@ -469,7 +467,7 @@
             }
         });
 
-        // Újragenerálás funkció
+        // Újragenerálás funkció - Módosítottam a promptot és a kimenet feldolgozását
         document.getElementById('regenerate-btn').addEventListener('click', async () => {
             const outputTextarea = document.getElementById('output');
             const selectedText = getSelectedText();
@@ -491,21 +489,16 @@
             const lineCount = selectedLines.length;
             
             const regeneratePrompt = `
-Írd újra a következő szövegrészt.
-A teljes dalszöveg a következő:
+Írd újra a következő szövegrészletet, figyelembe véve a dalszöveg környezetét. A válaszodnak PONTOSAN ${lineCount} sorból kell állnia, és kizárólag ezt a részt kell tartalmaznia, semmi mást.
+A rímképlet: ${selectedRhymePattern}, a sorok szótagszáma pedig nem haladhatja meg a ${maxSyllables}-t. A téma: ${theme}.
+
+Eredeti dalszöveg:
 ${lastGeneratedLyrics}
 
-A kijelölt rész:
+Újragenerálandó rész:
 "${selectedText}"
 
-Módosítások:
-- A versszakok száma: ${lineCount}
-- A sorok szótagszáma ne haladja meg a ${maxSyllables}-t
-- Rímképlet: ${selectedRhymePattern}
-- Téma: ${theme}
-- A stílus és hangvétel illeszkedjen az eredeti dalszöveghez.
-
-Fontos: Kizárólag a kijelölt részt írd át, és csak a megadott számú sort generáld le. A válaszod CSAK a dalszöveg legyen, semmilyen magyarázó szöveg nem kell!
+FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok nélkül.
 `;
 
             try {
@@ -520,17 +513,15 @@ Fontos: Kizárólag a kijelölt részt írd át, és csak a megadott számú sor
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Tisztítsuk meg a választ
                     let newText = data.message.trim();
+                    // A felesleges részek eltávolítása
                     newText = newText.replace(/\(\w\)/g, '');
                     newText = newText.replace(/^\d+\.\s*versszak\s*/gim, '');
-                    newText = newText.trim();
                     
-                    // Csak az első N sort vesszük, amennyit kijelöltünk
+                    // A generált szöveg levágása a kívánt sorok számára
                     const newLines = newText.split('\n').slice(0, lineCount);
                     const finalNewText = newLines.join('\n');
                     
-                    // Szöveg cseréje
                     const currentText = outputTextarea.value;
                     const newFullText = currentText.replace(selectedText, finalNewText);
                     outputTextarea.value = newFullText;
@@ -558,14 +549,13 @@ Fontos: Kizárólag a kijelölt részt írd át, és csak a megadott számú sor
             return outputTextarea.value.substring(start, end);
         }
         
-        // Ezt a funkciót frissítettem a letisztultabb prompt-megközelítéshez
         function createDetailedPrompt(theme, versesFrom, versesTo, linesPerVerse, maxSyllables, rhymePattern) {
             const promptParts = [
                 `Írj egy dalszöveget a következő témában: "${theme}".`,
-                `A dalnak ${versesFrom}-${versesTo} versszakból kell állnia, minden versszakban pontosan ${linesPerVerse} sorral.`,
+                `A dalszövegnek ${versesFrom}-${versesTo} versszakból kell állnia, minden versszakban pontosan ${linesPerVerse} sorral.`,
                 `Használj tökéletes rímeket a(z) ${rhymePattern} rímképlet szerint.`,
-                `Minden sor szótagszáma ne haladja meg a ${maxSyllables}-t.`,
-                `Figyelj rá, hogy a sorok ritmikusan illeszkedjenek egymáshoz.`,
+                `Minden sor szótagszáma legfeljebb ${maxSyllables} legyen.`,
+                `Ne írj más szöveget, csak a dalszöveget.`,
             ];
             return promptParts.join('\n');
         }
