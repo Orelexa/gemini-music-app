@@ -40,52 +40,47 @@ exports.handler = async (event) => {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY_NEW);
     let model;
     let finalPrompt = prompt;
-if (mode === 'image-gen') {
-  // Képgenerálás Gemini 2.5 Flash Image modellel
-  model = genAI.getGenerativeModel({ 
-    model: "gemini-2.5-flash-image"
-  });
-  
-  try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    
-    // Keressük meg a base64 képet a válaszban
-    if (response.candidates && response.candidates[0]?.content?.parts) {
-      for (const part of response.candidates[0].content.parts) {
-        if (part.inlineData && part.inlineData.data) {
-          return {
-            statusCode: 200,
-            headers,
-            body: JSON.stringify({ 
-              image: part.inlineData.data,
-              mimeType: part.inlineData.mimeType || 'image/jpeg'
-            })
-          };
-        }
-      }
-    }
-    
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: "Nem sikerült a képet generálni" })
-    };
-  } catch (imageError) {
-    console.error("Image generation error:", imageError);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: `Kép generálási hiba: ${imageError.message}` })
-    };
-  }
-}
+
+    // Különböző logikák a különböző módokhoz
+    if (mode === 'image-gen') {
+      // Képgenerálás Gemini 2.5 Flash Image modellel
+      model = genAI.getGenerativeModel({ 
+        model: "gemini-2.5-flash-image"
+      });
       
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ error: "Nem sikerült a képet generálni" })
-      };
+      try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        
+        // Keressük meg a base64 képet a válaszban
+        if (response.candidates && response.candidates[0]?.content?.parts) {
+          for (const part of response.candidates[0].content.parts) {
+            if (part.inlineData && part.inlineData.data) {
+              return {
+                statusCode: 200,
+                headers,
+                body: JSON.stringify({ 
+                  image: part.inlineData.data,
+                  mimeType: part.inlineData.mimeType || 'image/jpeg'
+                })
+              };
+            }
+          }
+        }
+        
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: "Nem sikerült a képet generálni" })
+        };
+      } catch (imageError) {
+        console.error("Image generation error:", imageError);
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: `Kép generálási hiba: ${imageError.message}` })
+        };
+      }
       
     } else if (mode === 'rhyme-search') {
       // Rímkereső modell, nagyon alacsony kreativitással
