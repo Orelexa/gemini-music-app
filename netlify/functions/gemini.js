@@ -40,41 +40,46 @@ exports.handler = async (event) => {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY_NEW);
     let model;
     let finalPrompt = prompt;
-
-    // Különböző logikák a különböző módokhoz
-    if (mode === 'image-gen') {
-      // Képgenerálás Imagen 3 modellel
-      model = genAI.getGenerativeModel({ 
-        model: "imagen-3.0-generate-001"
-      });
-      
-      const imageResult = await model.generateContent({
-        contents: [{
-          role: "user",
-          parts: [{text: prompt}]
-        }],
-        generationConfig: {
-          responseModalities: "image",
-          aspectRatio: "2:3"
-        }
-      });
-      
-      const imageResponse = await imageResult.response;
-      
-      // Az első generált kép base64 formátumban
-      if (imageResponse.candidates && imageResponse.candidates[0]?.content?.parts) {
-        const imagePart = imageResponse.candidates[0].content.parts.find(part => part.inlineData);
-        if (imagePart && imagePart.inlineData) {
+if (mode === 'image-gen') {
+  // Képgenerálás Gemini 2.5 Flash Image modellel
+  model = genAI.getGenerativeModel({ 
+    model: "gemini-2.5-flash-image"
+  });
+  
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    
+    // Keressük meg a base64 képet a válaszban
+    if (response.candidates && response.candidates[0]?.content?.parts) {
+      for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData && part.inlineData.data) {
           return {
             statusCode: 200,
             headers,
             body: JSON.stringify({ 
-              image: imagePart.inlineData.data,
-              mimeType: imagePart.inlineData.mimeType
+              image: part.inlineData.data,
+              mimeType: part.inlineData.mimeType || 'image/jpeg'
             })
           };
         }
       }
+    }
+    
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: "Nem sikerült a képet generálni" })
+    };
+  } catch (imageError) {
+    console.error("Image generation error:", imageError);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: `Kép generálási hiba: ${imageError.message}` })
+    };
+  }
+}
       
       return {
         statusCode: 500,
