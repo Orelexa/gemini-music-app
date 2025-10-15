@@ -27,9 +27,9 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { prompt, mode } = JSON.parse(event.body);
+    const { prompt, mode, imageData } = JSON.parse(event.body);
 
-    if (!prompt) {
+    if (!prompt && mode !== 'image-gen') {
       return {
         statusCode: 400,
         headers,
@@ -42,7 +42,47 @@ exports.handler = async (event) => {
     let finalPrompt = prompt;
 
     // Különböző logikák a különböző módokhoz
-    if (mode === 'rhyme-search') {
+    if (mode === 'image-gen') {
+      // Képgenerálás Imagen 3 modellel
+      model = genAI.getGenerativeModel({ 
+        model: "imagen-3.0-generate-001"
+      });
+      
+      const imageResult = await model.generateContent({
+        contents: [{
+          role: "user",
+          parts: [{text: prompt}]
+        }],
+        generationConfig: {
+          responseModalities: "image",
+          aspectRatio: "2:3"
+        }
+      });
+      
+      const imageResponse = await imageResult.response;
+      
+      // Az első generált kép base64 formátumban
+      if (imageResponse.candidates && imageResponse.candidates[0]?.content?.parts) {
+        const imagePart = imageResponse.candidates[0].content.parts.find(part => part.inlineData);
+        if (imagePart && imagePart.inlineData) {
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ 
+              image: imagePart.inlineData.data,
+              mimeType: imagePart.inlineData.mimeType
+            })
+          };
+        }
+      }
+      
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: "Nem sikerült a képet generálni" })
+      };
+      
+    } else if (mode === 'rhyme-search') {
       // Rímkereső modell, nagyon alacsony kreativitással
       model = genAI.getGenerativeModel({ 
         model: "gemini-1.5-flash",
@@ -53,6 +93,46 @@ exports.handler = async (event) => {
         systemInstruction: `Te egy KIVÁLÓ rímkereső vagy. Egyetlen feladatod van: a megadott szóhoz rímelő szavak listáját adni. Csak a szavakat add meg, vesszővel elválasztva. Soha ne adj hozzá magyarázó szöveget vagy mondatot.`
       });
       finalPrompt = `Adj meg 5-10 szót, ami rímel a következő szóra: "${prompt}"`;
+    } else if (mode === 'music-style') {
+      // Zenei stílus ajánlás
+      model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 500
+        },
+        systemInstruction: `Te egy ZENEI SZAKÉRTŐ vagy. A feladatod, hogy a dalszöveg alapján ajánlj zenei stílusokat, műfajokat, hangulatokat és tempót. Legyél konkrét és praktikus.`
+      });
+    } else if (mode === 'melody-ideas') {
+      // Dallam ötletek
+      model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        generationConfig: {
+          temperature: 0.8,
+          maxOutputTokens: 800
+        },
+        systemInstruction: `Te egy ZENESZERZŐ vagy. A feladatod, hogy dallam ötleteket adj a dalszöveghez: milyen legyen a dallam íve, ritmus, hangterjedelme, karaktere. Adj konkrét javaslatokat.`
+      });
+    } else if (mode === 'chord-progression') {
+      // Akkord progresszió generálás
+      model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        generationConfig: {
+          temperature: 0.6,
+          maxOutputTokens: 600
+        },
+        systemInstruction: `Te egy HARMONIZÁLÓ SZAKÉRTŐ vagy. A feladatod, hogy akkord progressziókat ajánlj a dalszöveghez különböző hangnemekben. Adj meg konkrét akkord sorokat (pl. C - Am - F - G) és magyarázd el, miért illenek a dalhoz.`
+      });
+    } else if (mode === 'translate-english') {
+      // Angol fordítás
+      model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048
+        },
+        systemInstruction: `Te egy PROFI FORDÍTÓ vagy, aki dalszövegeket fordít magyarról angolra. A fordításnak meg kell őriznie a rímeket, a ritmust és az érzelmi töltetét. Ha kell, kreatívan alkalmazkodj, de maradj hű az eredeti jelentéshez és hangulathoz.`
+      });
     } else if (mode === 'chat') {
       // Chat modell, ami a dalszövegíró szerepben van
       model = genAI.getGenerativeModel({ 
@@ -77,25 +157,28 @@ exports.handler = async (event) => {
       });
     }
 
-    console.log("Generating content with prompt:", finalPrompt.substring(0, 100) + "...");
+    console.log("Generating content with mode:", mode);
 
-    const result = await model.generateContent(finalPrompt);
-    const response = await result.response;
-    const text = response.text();
+    // Csak akkor generáljunk szöveges tartalmat, ha nem képgenerálás
+    if (mode !== 'image-gen') {
+      const result = await model.generateContent(finalPrompt);
+      const response = await result.response;
+      const text = response.text();
 
-    if (!text || text.trim().length === 0) {
+      if (!text || text.trim().length === 0) {
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: "Empty response from AI model" })
+        };
+      }
+
       return {
-        statusCode: 500,
+        statusCode: 200,
         headers,
-        body: JSON.stringify({ error: "Empty response from AI model" })
+        body: JSON.stringify({ message: text.trim() })
       };
     }
-
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ message: text.trim() })
-    };
 
   } catch (error) {
     console.error("Gemini API Error:", error);

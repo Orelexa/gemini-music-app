@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dalszöveg Generáló Alkalmazás</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: #bb86fc;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(187, 134, 252, 0.3);
+        }
+
+        .subtitle {
+            color: #9e9e9e;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .input-section {
+            background: rgba(40, 40, 40, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .output-section {
+            background: rgba(40, 40, 40, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .chat-section {
+            background: rgba(40, 40, 40, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-title {
+            color: #bb86fc;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(50, 50, 50, 0.8);
+            color: #e0e0e0;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #bb86fc;
+            box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .range-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #bb86fc 0%, #6200ee 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(187, 134, 252, 0.3);
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(187, 134, 252, 0.4);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .output-box {
+            background: rgba(20, 20, 20, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            min-height: 400px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            overflow-y: auto;
+            max-height: 600px;
+            position: relative;
+        }
+
+        .output-box.empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9e9e9e;
+            font-style: italic;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .chat-box {
+            background: rgba(20, 20, 20, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-message {
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background-color: #3700b3;
+            align-self: flex-end;
+        }
+
+        .gemini-message {
+            background-color: #bb86fc;
+            color: #1a1a2e;
+            align-self: flex-start;
+        }
+
+        .chat-input-container {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-container input {
+            flex-grow: 1;
+            margin-top: 0;
+        }
+
+        .output-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .regenerate-btn {
+            background: linear-gradient(135deg, #03dac6 0%, #018786 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .regenerate-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(3, 218, 198, 0.3);
+        }
+
+        .regenerate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .copy-lyrics-btn {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .copy-lyrics-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .rhyme-pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .rhyme-option {
+            padding: 8px 12px;
+            background: rgba(60, 60, 60, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .rhyme-option:hover {
+            border-color: #bb86fc;
+            background: rgba(70, 70, 70, 0.8);
+        }
+
+        .rhyme-option.selected {
+            background: linear-gradient(135deg, #bb86fc 0%, #6200ee 100%);
+            border-color: #bb86fc;
+            color: white;
+        }
+
+        #rhyme-suggestions {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(20, 20, 20, 0.8);
+            border-radius: 10px;
+            display: none; /* Alapértelmezetten rejtve */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #rhyme-suggestions span {
+            display: inline-block;
+            background-color: #3700b3;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #rhyme-suggestions span:hover {
+            background-color: #6200ee;
+        }
+
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .rhyme-pattern-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .output-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 Dalszöveg Generáló Alkalmazás</h1>
+            <p class="subtitle">Professzionális magyar dalszövegek mesterséges intelligencia segítségével</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title">⚙️ Beállítások</h2>
+                
+                <div class="form-group">
+                    <label for="theme">Téma és stílus leírása:</label>
+                    <textarea id="theme" rows="4" placeholder="Például: Szerelmes balladá a tavaszról, melankolikus hangvételű dal az emlékekről, energikus rock szám a szabadságról..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Versszakok száma:</label>
+                    <div class="range-group">
+                        <div>
+                            <label for="verses-from">Minimum:</label>
+                            <select id="verses-from">
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="verses-to">Maximum:</label>
+                            <select id="verses-to">
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4" selected>4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                                <option value="13">13</option>
+                                <option value="14">14</option>
+                                <option value="15">15</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="lines-per-verse">Sorok száma versszakonként:</label>
+                    <select id="lines-per-verse">
+                        <option value="2">2 sor</option>
+                        <option value="3">3 sor</option>
+                        <option value="4" selected>4 sor</option>
+                        <option value="5">5 sor</option>
+                        <option value="6">6 sor</option>
+                        <option value="7">7 sor</option>
+                        <option value="8">8 sor</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="max-syllables">Maximum szótagszám soronként:</label>
+                    <select id="max-syllables">
+                        <option value="4">4 szótag</option>
+                        <option value="6">6 szótag</option>
+                        <option value="8" selected>8 szótag</option>
+                        <option value="10">10 szótag</option>
+                        <option value="12">12 szótag</option>
+                        <option value="14">14 szótag</option>
+                        <option value="16">16 szótag</option>
+                        <option value="18">18 szótag</option>
+                        <option value="20">20 szótag</option>
+                        <option value="22">22 szótag</option>
+                        <option value="24">24 szótag</option>
+                        <option value="26">26 szótag</option>
+                        <option value="28">28 szótag</option>
+                        <option value="30">30 szótag</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Rímképlet:</label>
+                    <div class="rhyme-pattern-grid">
+                        <div class="rhyme-option selected" data-pattern="AABB">A-A-B-B</div>
+                        <div class="rhyme-option" data-pattern="ABAB">A-B-A-B</div>
+                        <div class="rhyme-option" data-pattern="AAAB">A-A-A-B</div>
+                        <div class="rhyme-option" data-pattern="ABBA">A-B-B-A</div>
+                        <div class="rhyme-option" data-pattern="AABA">A-A-B-A</div>
+                        <div class="rhyme-option" data-pattern="ABCC">A-B-C-C</div>
+                        <div class="rhyme-option" data-pattern="AAAA">A-A-A-A</div>
+                        <div class="rhyme-option" data-pattern="ABCD">A-B-C-D</div>
+                    </div>
+                </div>
+
+                <button id="generate-btn" class="generate-btn">
+                    Dalszöveg Generálása
+                </button>
+            </div>
+
+            <div class="output-section">
+                <h2 class="section-title">📝 Generált Dalszöveg</h2>
+                
+                <textarea id="output" class="output-box empty" placeholder="Itt fog megjelenni a generált dalszöveg...&#10;&#10;A szöveget itt közvetlenül szerkesztheted is!"></textarea>
+                
+                <!-- Új rímjavaslatok div -->
+                <div id="rhyme-suggestions" style="display: none;"></div>
+
+                <div class="output-actions" id="output-actions">
+                    <button id="regenerate-btn" class="regenerate-btn" style="display: none;">
+                        Kijelölt Rész Újragenerálása
+                    </button>
+                    <button id="copy-lyrics-btn" class="copy-lyrics-btn" style="display: none;">
+                        Másolás
+                    </button>
+                </div>
+            </div>
+            
+            <div class="chat-section">
+                <h2 class="section-title">💬 Chat a Gemini-vel</h2>
+                <div id="chat-box" class="chat-box">
+                    <div class="chat-message gemini-message">
+                        Szia Zsolt! Segíthetek dalszöveget írni? Mesélj a témáról vagy a stílusról!
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" id="chat-input" placeholder="Írj ide a Gemini-nek...">
+                    <button id="send-chat-btn" class="generate-btn" style="width: auto;">Küldés</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedRhymePattern = 'AABB';
+        let lastGeneratedLyrics = '';
+        let chatHistory = [{ role: 'model', parts: [{ text: 'Szia Zsolt! Segíthetek dalszöveget írni? Mesélj a témáról vagy a stílusról!' }] }];
+
+        // Rímképlet kiválasztás
+        document.querySelectorAll('.rhyme-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.rhyme-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedRhymePattern = this.getAttribute('data-pattern');
+            });
+        });
+        
+        // Dinamikus rímkereső funkció
+        const rhymeSuggestionsDiv = document.getElementById('rhyme-suggestions');
+        const outputTextarea = document.getElementById('output');
+        let rhymeSearchTimer = null;
+
+        outputTextarea.addEventListener('keyup', (event) => {
+            clearTimeout(rhymeSearchTimer);
+            rhymeSearchTimer = setTimeout(async () => {
+                const cursorPosition = outputTextarea.selectionStart;
+                const text = outputTextarea.value;
+                const lines = text.substring(0, cursorPosition).split('\n');
+                const lastLine = lines[lines.length - 1];
+                const lastWord = lastLine.split(/[\s,.'";?!-]+/).pop().toLowerCase();
+
+                if (lastWord.length > 2) { // Minimum 3 karakteres szavakat keresünk
+                    try {
+                        const response = await fetch('/.netlify/functions/gemini', {
+                            method: 'POST',
+                            body: JSON.stringify({ prompt: lastWord, mode: 'rhyme-search' }),
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        if (response.ok) {
+                            displayRhymeSuggestions(data.message.split(','));
+                        } else {
+                            console.error('Rhyme search error:', data.error);
+                            rhymeSuggestionsDiv.style.display = 'none';
+                        }
+                    } catch (error) {
+                        console.error('Network error during rhyme search:', error);
+                        rhymeSuggestionsDiv.style.display = 'none';
+                    }
+                } else {
+                    rhymeSuggestionsDiv.style.display = 'none';
+                }
+            }, 500); // 500ms debounce
+        });
+
+        function displayRhymeSuggestions(words) {
+            rhymeSuggestionsDiv.innerHTML = '';
+            if (words && words.length > 0) {
+                rhymeSuggestionsDiv.style.display = 'block';
+                words.forEach(word => {
+                    const wordSpan = document.createElement('span');
+                    wordSpan.textContent = word.trim();
+                    wordSpan.addEventListener('click', () => {
+                        insertRhymingWord(word.trim());
+                    });
+                    rhymeSuggestionsDiv.appendChild(wordSpan);
+                });
+            } else {
+                rhymeSuggestionsDiv.style.display = 'none';
+            }
+        }
+
+        function insertRhymingWord(word) {
+            const cursorPosition = outputTextarea.selectionStart;
+            const textBeforeCursor = outputTextarea.value.substring(0, cursorPosition);
+            const textAfterCursor = outputTextarea.value.substring(cursorPosition);
+            const lines = textBeforeCursor.split('\n');
+            const lastLine = lines.pop();
+            const lastWordIndex = lastLine.lastIndexOf(lastLine.split(/[\s,.'";?!-]+/).pop());
+            const newLastLine = lastLine.substring(0, lastWordIndex);
+            
+            outputTextarea.value = `${lines.join('\n')}\n${newLastLine} ${word}${textAfterCursor}`;
+            
+            // Mozgatjuk a kurzort a beszúrt szó után
+            const newCursorPosition = (lines.join('\n') + `\n${newLastLine} ${word}`).length;
+            outputTextarea.selectionStart = newCursorPosition;
+            outputTextarea.selectionEnd = newCursorPosition;
+
+            rhymeSuggestionsDiv.style.display = 'none';
+            outputTextarea.focus();
+        }
+
+        // Dalszöveg generálás
+        document.getElementById('generate-btn').addEventListener('click', async () => {
+            const generateBtn = document.getElementById('generate-btn');
+            
+            const theme = document.getElementById('theme').value.trim();
+            const versesFrom = parseInt(document.getElementById('verses-from').value);
+            const versesTo = parseInt(document.getElementById('verses-to').value);
+            const linesPerVerse = parseInt(document.getElementById('lines-per-verse').value);
+            const maxSyllables = parseInt(document.getElementById('max-syllables').value);
+
+            if (!theme) {
+                alert('Kérlek, add meg a dalszöveg témáját és stílusát!');
+                return;
+            }
+
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span class="loading"></span> Generálás...';
+            outputTextarea.value = 'A dalszöveg generálása folyamatban...';
+            outputTextarea.classList.remove('empty');
+            hideOutputActions();
+            rhymeSuggestionsDiv.style.display = 'none';
+
+            const prompt = createDetailedPrompt(theme, versesFrom, versesTo, linesPerVerse, maxSyllables, selectedRhymePattern);
+            const requestBody = { prompt, mode: 'lyrics-gen' };
+
+            try {
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify(requestBody),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    let cleanedText = data.message.trim();
+                    cleanedText = cleanedText.replace(/\(\w\)/g, '');
+                    cleanedText = cleanedText.replace(/^\d+\.\s*versszak\s*/gim, '');
+                    cleanedText = cleanedText.trim();
+                    
+                    lastGeneratedLyrics = cleanedText;
+                    outputTextarea.value = cleanedText;
+                    showOutputActions();
+                } else {
+                    outputTextarea.value = `Hiba: ${data.error}`;
+                }
+            } catch (error) {
+                outputTextarea.value = `Hiba: ${error.message}`;
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Dalszöveg Generálása';
+            }
+        });
+
+        // Újragenerálás funkció
+        document.getElementById('regenerate-btn').addEventListener('click', async () => {
+            const outputTextarea = document.getElementById('output');
+            const selectedText = getSelectedText();
+            
+            if (!selectedText) {
+                alert('Kérlek, jelölj ki egy szövegrészt az újrageneráláshoz!');
+                return;
+            }
+
+            const regenerateBtn = document.getElementById('regenerate-btn');
+            regenerateBtn.disabled = true;
+            regenerateBtn.innerHTML = '<span class="loading"></span> Újragenerálás...';
+
+            const theme = document.getElementById('theme').value.trim();
+            const maxSyllables = parseInt(document.getElementById('max-syllables').value);
+
+            const selectedLines = selectedText.split('\n').filter(line => line.trim());
+            const lineCount = selectedLines.length;
+            
+            const regeneratePrompt = `
+Írd újra a következő szövegrészletet, figyelembe véve a dalszöveg környezetét. A válaszodnak PONTOSAN ${lineCount} sorból kell állnia, és kizárólag ezt a részt kell tartalmaznia, semmi mást.
+A rímképlet: ${selectedRhymePattern}, a sorok szótagszáma pedig nem haladhatja meg a ${maxSyllables}-t. A téma: ${theme}.
+
+Eredeti dalszöveg:
+${lastGeneratedLyrics}
+
+Újragenerálandó rész:
+"${selectedText}"
+
+FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok nélkül.
+`;
+            const requestBody = { prompt: regeneratePrompt, mode: 'lyrics-gen' };
+
+            try {
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify(requestBody),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    let newText = data.message.trim();
+                    newText = newText.replace(/\(\w\)/g, '');
+                    newText = newText.replace(/^\d+\.\s*versszak\s*/gim, '');
+                    
+                    const newLines = newText.split('\n').slice(0, lineCount);
+                    const finalNewText = newLines.join('\n');
+                    
+                    const currentText = outputTextarea.value;
+                    const newFullText = currentText.replace(selectedText, finalNewText);
+                    outputTextarea.value = newFullText;
+                    lastGeneratedLyrics = newFullText;
+                } else {
+                    alert(`Hiba az újragenerálásban: ${data.error}`);
+                }
+            } catch (error) {
+                alert(`Hiba: ${error.message}`);
+            } finally {
+                regenerateBtn.disabled = false;
+                regenerateBtn.textContent = 'Kijelölt Rész Újragenerálása';
+            }
+        });
+
+        // Chat küldése
+        document.getElementById('send-chat-btn').addEventListener('click', async () => {
+            const chatInput = document.getElementById('chat-input');
+            const chatBox = document.getElementById('chat-box');
+            const userMessage = chatInput.value.trim();
+            if (!userMessage) return;
+
+            const userMsgDiv = document.createElement('div');
+            userMsgDiv.className = 'chat-message user-message';
+            userMsgDiv.textContent = userMessage;
+            chatBox.appendChild(userMsgDiv);
+            chatInput.value = '';
+
+            chatHistory.push({ role: 'user', parts: [{ text: userMessage }] });
+            
+            const geminiMsgDiv = document.createElement('div');
+            geminiMsgDiv.className = 'chat-message gemini-message';
+            geminiMsgDiv.textContent = 'A Gemini válaszol...';
+            chatBox.appendChild(geminiMsgDiv);
+
+            const requestBody = { prompt: chatHistory.map(h => `${h.role === 'user' ? 'Felhasználó' : 'Gemini'}: ${h.parts[0].text}`).join('\n'), mode: 'chat' };
+
+            try {
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify(requestBody),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    geminiMsgDiv.textContent = data.message.trim();
+                    chatHistory.push({ role: 'model', parts: [{ text: data.message.trim() }] });
+                } else {
+                    geminiMsgDiv.textContent = `Hiba: ${data.error}`;
+                }
+            } catch (error) {
+                console.error('Chat hiba:', error);
+                const errorMsgDiv = document.createElement('div');
+                errorMsgDiv.className = 'chat-message gemini-message';
+                errorMsgDiv.textContent = 'Hiba történt a chat során.';
+                chatBox.appendChild(errorMsgDiv);
+            } finally {
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        });
+
+        document.getElementById('copy-lyrics-btn').addEventListener('click', () => {
+             copyToClipboard();
+        });
+
+
+        function getSelectedText() {
+            const outputTextarea = document.getElementById('output');
+            const start = outputTextarea.selectionStart;
+            const end = outputTextarea.selectionEnd;
+            
+            if (start === end) {
+                return '';
+            }
+            
+            return outputTextarea.value.substring(start, end);
+        }
+        
+        function createDetailedPrompt(theme, versesFrom, versesTo, linesPerVerse, maxSyllables, rhymePattern) {
+            const promptParts = [
+                `Írj egy dalszöveget a következő témában: "${theme}".`,
+                `A dalszövegnek ${versesFrom}-${versesTo} versszakból kell állnia, minden versszakban pontosan ${linesPerVerse} sorral.`,
+                `Használj tökéletes rímeket a(z) ${rhymePattern} rímképlet szerint.`,
+                `Minden sor szótagszáma legfeljebb ${maxSyllables} legyen.`,
+                `Ne írj más szöveget, csak a dalszöveget.`,
+            ];
+            return promptParts.join('\n');
+        }
+
+        function showOutputActions() {
+            document.getElementById('regenerate-btn').style.display = 'inline-block';
+            document.getElementById('copy-lyrics-btn').style.display = 'inline-block';
+        }
+        
+        function hideOutputActions() {
+            document.getElementById('regenerate-btn').style.display = 'none';
+            document.getElementById('copy-lyrics-btn').style.display = 'none';
+        }
+
+        function copyToClipboard() {
+            const outputTextarea = document.getElementById('output');
+            const text = outputTextarea.value;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const copyBtn = document.getElementById('copy-lyrics-btn');
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Másolva!';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        // Textarea figyelése a változásokért
+        document.getElementById('output').addEventListener('input', function() {
+            lastGeneratedLyrics = this.value;
+        });
+
+        // Versszak tartomány validáció
+        document.getElementById('verses-from').addEventListener('change', function() {
+            const fromValue = parseInt(this.value);
+            const toSelect = document.getElementById('verses-to');
+            const toValue = parseInt(toSelect.value);
+            
+            if (fromValue > toValue) {
+                toSelect.value = fromValue;
+            }
+        });
+
+        document.getElementById('verses-to').addEventListener('change', function() {
+            const toValue = parseInt(this.value);
+            const fromSelect = document.getElementById('verses-from');
+            const fromValue = parseInt(fromSelect.value);
+            
+            if (toValue < fromValue) {
+                fromSelect.value = toValue;
+            }
+        });
+    </script>
+</body>
+</html>
