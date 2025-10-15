@@ -85,7 +85,7 @@ exports.handler = async (event) => {
     } else if (mode === 'rhyme-search') {
       // Rímkereső modell, nagyon alacsony kreativitással
       model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash-latest",
+        model: "gemini-2.0-flash-exp",
         generationConfig: {
           temperature: 0.1,
           maxOutputTokens: 50
@@ -96,7 +96,7 @@ exports.handler = async (event) => {
     } else if (mode === 'music-style') {
       // Zenei stílus ajánlás
       model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash-latest",
+        model: "gemini-2.0-flash-exp",
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 500
@@ -106,7 +106,7 @@ exports.handler = async (event) => {
     } else if (mode === 'melody-ideas') {
       // Dallam ötletek
       model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash-latest",
+        model: "gemini-2.0-flash-exp",
         generationConfig: {
           temperature: 0.8,
           maxOutputTokens: 800
@@ -116,7 +116,7 @@ exports.handler = async (event) => {
     } else if (mode === 'chord-progression') {
       // Akkord progresszió generálás
       model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash-latest",
+        model: "gemini-2.0-flash-exp",
         generationConfig: {
           temperature: 0.6,
           maxOutputTokens: 600
@@ -126,7 +126,7 @@ exports.handler = async (event) => {
     } else if (mode === 'translate-english') {
       // Angol fordítás
       model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash-latest",
+        model: "gemini-2.0-flash-exp",
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 2048
@@ -136,7 +136,7 @@ exports.handler = async (event) => {
     } else if (mode === 'chat') {
       // Chat modell, ami a dalszövegíró szerepben van
       model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash-latest",
+        model: "gemini-2.0-flash-exp",
         generationConfig: {
           temperature: 0.8
         },
@@ -145,7 +145,7 @@ exports.handler = async (event) => {
     } else {
       // Dalszöveg generáló modell (lyrics-gen)
       model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash-latest",
+        model: "gemini-2.0-flash-exp",
         generationConfig: {
           temperature: 0.9,
           topP: 0.95,
