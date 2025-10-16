@@ -1095,19 +1095,29 @@ FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok
             return promptParts.join('\n');
         }
 
-        function showOutputActions() {
-            document.getElementById('regenerate-btn').style.display = 'inline-block';
-            document.getElementById('copy-lyrics-btn').style.display = 'inline-block';
-            document.getElementById('save-lyrics-btn').style.display = 'inline-block';
-            document.getElementById('translate-btn').style.display = 'inline-block';
-        }
-        
-        function hideOutputActions() {
-            document.getElementById('regenerate-btn').style.display = 'none';
-            document.getElementById('copy-lyrics-btn').style.display = 'none';
-            document.getElementById('save-lyrics-btn').style.display = 'none';
-            document.getElementById('translate-btn').style.display = 'none';
-        }
+       function showOutputActions() {
+    const regenerateBtn = document.getElementById('regenerate-btn');
+    const copyBtn = document.getElementById('copy-lyrics-btn');
+    const saveBtn = document.getElementById('save-lyrics-btn');
+    const translateBtn = document.getElementById('translate-btn');
+    
+    if (regenerateBtn) regenerateBtn.style.display = 'inline-block';
+    if (copyBtn) copyBtn.style.display = 'inline-block';
+    if (saveBtn) saveBtn.style.display = 'inline-block';
+    if (translateBtn) translateBtn.style.display = 'inline-block';
+}
+
+function hideOutputActions() {
+    const regenerateBtn = document.getElementById('regenerate-btn');
+    const copyBtn = document.getElementById('copy-lyrics-btn');
+    const saveBtn = document.getElementById('save-lyrics-btn');
+    const translateBtn = document.getElementById('translate-btn');
+    
+    if (regenerateBtn) regenerateBtn.style.display = 'none';
+    if (copyBtn) copyBtn.style.display = 'none';
+    if (saveBtn) saveBtn.style.display = 'none';
+    if (translateBtn) translateBtn.style.display = 'none';
+}
 
         function copyToClipboard() {
             const outputTextarea = document.getElementById('output');
