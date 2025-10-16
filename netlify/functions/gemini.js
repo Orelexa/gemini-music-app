@@ -160,25 +160,52 @@ exports.handler = async (event) => {
     console.log("Generating content with mode:", mode);
 
     // Csak akkor generáljunk szöveges tartalmat, ha nem képgenerálás
-    if (mode !== 'image-gen') {
-      const result = await model.generateContent(finalPrompt);
-      const response = await result.response;
-      const text = response.text();
-
-      if (!text || text.trim().length === 0) {
-        return {
-          statusCode: 500,
-          headers,
-          body: JSON.stringify({ error: "Empty response from AI model" })
-        };
+    if (mode === 'image-gen') {
+  // Képgenerálás Gemini 2.5 Flash Image modellel
+  model = genAI.getGenerativeModel({ 
+    model: "gemini-2.5-flash-image"
+  });
+  
+  // Pontosított prompt felirat nélküli képhez 2:3 arányban
+  const enhancedPrompt = `${prompt}. 
+FONTOS: A képen NE legyen SEMMIFÉLE szöveg, felirat, betű vagy írás! 
+Csak vizuális elemek legyenek: tárgyak, természet, hangszerek, jelenetek.
+Fotorealisztikus stílus, művészi borítókép, 2:3 (portrait) formátum.`;
+  
+  try {
+    const result = await model.generateContent(enhancedPrompt);
+    const response = await result.response;
+    
+    // Keressük meg a base64 képet a válaszban
+    if (response.candidates && response.candidates[0]?.content?.parts) {
+      for (const part of response.candidates[0].content.parts) {
+        if (part.inlineData && part.inlineData.data) {
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ 
+              image: part.inlineData.data,
+              mimeType: part.inlineData.mimeType || 'image/jpeg'
+            })
+          };
+        }
       }
-
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ message: text.trim() })
-      };
     }
+    
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: "Nem sikerült a képet generálni" })
+    };
+  } catch (imageError) {
+    console.error("Image generation error:", imageError);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: `Kép generálási hiba: ${imageError.message}` })
+    };
+  }
+}
 
   } catch (error) {
     console.error("Gemini API Error:", error);
