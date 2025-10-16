@@ -668,19 +668,22 @@
 
                 const data = await response.json();
 
-                if (response.ok && data.image) {
-                    currentImageData = data.image;
-                    const img = document.createElement('img');
-                    img.src = `data:${data.mimeType};base64,${data.image}`;
-                    imageContainer.innerHTML = '';
-                    imageContainer.appendChild(img);
-                    imageContainer.classList.remove('empty');
-                    
-                    // Újragenerálás és letöltés gombok megjelenítése
-                    document.getElementById('image-actions').style.display = 'flex';
-                } else {
-                    imageContainer.innerHTML = '<span>Hiba a kép generálásában: ' + (data.error || 'Ismeretlen hiba') + '</span>';
-                }
+              if (response.ok && data.image) {
+    currentImageData = data.image;
+    const img = document.createElement('img');
+    img.src = `data:${data.mimeType};base64,${data.image}`;
+    imageContainer.innerHTML = '';
+    imageContainer.appendChild(img);
+    imageContainer.classList.remove('empty');
+    
+    // Újragenerálás és letöltés gombok megjelenítése
+    const imageActions = document.getElementById('image-actions');
+    if (imageActions) {
+        imageActions.style.display = 'flex';
+    }
+} else {
+    imageContainer.innerHTML = '<span>Hiba a kép generálásában: ' + (data.error || 'Ismeretlen hiba') + '</span>';
+}
             } catch (error) {
                 imageContainer.innerHTML = '<span>Hiba: ' + error.message + '</span>';
             } finally {
