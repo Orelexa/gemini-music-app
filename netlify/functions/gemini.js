@@ -139,6 +139,36 @@ Fotorealisztikus stílus, művészi borítókép, 2:3 (portrait) formátum.`;
         },
         systemInstruction: `Te egy PROFI FORDÍTÓ vagy, aki dalszövegeket fordít magyarról angolra. A fordításnak meg kell őriznie a rímeket, a ritmust és az érzelmi töltetét. Ha kell, kreatívan alkalmazkodj, de maradj hű az eredeti jelentéshez és hangulathoz.`
       });
+      } else if (mode === 'suno-prompt') {
+  // Suno prompt generálás
+  model = genAI.getGenerativeModel({ 
+    model: "gemini-2.0-flash-exp",
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 1000
+    },
+    systemInstruction: `Te egy SUNO AI PROMPT SZAKÉRTŐ vagy. A feladatod, hogy a megadott információk alapján egy tökéletes, ANGOL NYELVŰ Suno AI promptot készíts.
+
+FONTOS SZABÁLYOK:
+1. Maximum 1000 karakter
+2. Angol nyelvű legyen minden
+3. Tartalmazza: zenei stílus, hangulat, tempó, hangszerelés
+4. Konkrét, leíró jelzők
+5. Formátum: [Verse], [Chorus], [Bridge] stb. használata
+6. Rövid, tömör, hatásos
+
+Példa jó prompt:
+"[Verse]
+Acoustic guitar, melancholic indie folk, soft male vocals
+Slow tempo, intimate atmosphere
+[Chorus]
+Uplifting, hopeful melody, layered harmonies
+[Bridge]
+Minimal piano, emotional crescendo"
+
+Add vissza CSAK a promptot, semmi extra szöveget!`
+  });
+} else if (mode === 'chat') {
     } else if (mode === 'chat') {
       // Chat modell
       model = genAI.getGenerativeModel({ 
