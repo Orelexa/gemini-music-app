@@ -1393,47 +1393,45 @@ function hideOutputActions() {
             try {
                 // Összeállítjuk a prompt-ot az AI számára
                 const promptForAI = `
-Create a Suno AI STYLE PROMPT based on the following information. 
+Create a Suno AI STYLE PROMPT for music production. This is ONLY about the SOUND and PRODUCTION, not lyrics!
 
-IMPORTANT: Do NOT write lyrics! Only describe the musical style, mood, instrumentation, and structure!
+CRITICAL RULES:
+- DO NOT use [Verse], [Chorus], [Bridge] or ANY square brackets []
+- DO NOT use (emotions) or ANY parentheses ()
+- Write in simple flowing sentences
+- Describe: genre, instruments, vocals, tempo, mood, production
+- Maximum 1000 characters
+- English only
+- If NO lyrics exist, start with "No Vocals - Instrumental"
 
-LYRICS CONTENT (for reference only):
-${sunoData.lyrics.substring(0, 300)}...
+INFORMATION:
+Lyrics content (for reference): ${sunoData.lyrics.substring(0, 200)}...
+Music style: ${sunoData.style || 'Determine from lyrics'}
+Melody info: ${sunoData.melody || 'Determine from lyrics'}
+Chords: ${sunoData.chords || 'Determine from lyrics'}
 
-MUSIC STYLE SUGGESTIONS:
-${sunoData.style || 'Create appropriate style based on lyrics'}
+EXAMPLE FORMAT (with vocals):
+Melancholic indie folk with acoustic guitar fingerpicking
+Soft male vocals with intimate vulnerable delivery
+Slow tempo around 70 BPM
+Layered harmonies building in chorus sections
+Minimal piano and subtle strings
+Warm organic production with natural reverb
+Reflective and bittersweet mood with hopeful undertones
+Light percussion with brushes on snare
+Alternative folk-rock elements
+Instruments: acoustic guitar, piano, strings, light drums
+Overall mood: introspective, emotional, uplifting
 
-MELODY INFORMATION:
-${sunoData.melody || 'Create appropriate melody description'}
+EXAMPLE FORMAT (instrumental):
+No Vocals - Instrumental
+Melancholic acoustic guitar fingerpicking
+Slow tempo around 70 BPM
+Minimal piano and subtle strings
+Warm organic production
+Reflective mood with light percussion
 
-CHORD INFORMATION:
-${sunoData.chords || 'Create appropriate chord suggestions'}
-
-Create a Suno STYLE prompt in ENGLISH, maximum 1000 characters.
-
-The prompt should include:
-- [Verse] section with instrumentation and vocal style
-- [Chorus] section with melody and energy description
-- [Bridge] section (if appropriate)
-- Emotions in parentheses like (melancholic, hopeful)
-- Overall style, tempo, mood, instruments
-- Production notes
-
-Example format:
-[Verse]
-Acoustic guitar, melancholic indie folk
-Soft male vocals, intimate
-(emotional, vulnerable)
-
-[Chorus]
-Uplifting melody, layered harmonies
-(hopeful, soaring)
-
-Style: Alternative folk
-Tempo: 75 BPM
-Mood: Reflective
-
-Return ONLY the style prompt in English, NO lyrics!
+Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
 `;
                 const response = await fetch('/.netlify/functions/gemini', {
                     method: 'POST',
