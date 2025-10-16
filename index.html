@@ -1393,41 +1393,48 @@ function hideOutputActions() {
             try {
                 // Összeállítjuk a prompt-ot az AI számára
                 const promptForAI = `
-Készíts egy Suno AI promptot az alábbi információk alapján.
+Create a Suno AI STYLE PROMPT based on the following information. 
 
-DALSZÖVEG:
-${sunoData.lyrics}
+IMPORTANT: Do NOT write lyrics! Only describe the musical style, mood, instrumentation, and structure!
 
-ZENEI STÍLUS AJÁNLÁS:
-${sunoData.style || 'Nincs megadva - találj ki megfelelő stílust a dalszöveg alapján'}
+LYRICS CONTENT (for reference only):
+${sunoData.lyrics.substring(0, 300)}...
 
-DALLAM INFORMÁCIÓ:
-${sunoData.melody || 'Nincs megadva - találj ki megfelelő dallam jellemzőket'}
+MUSIC STYLE SUGGESTIONS:
+${sunoData.style || 'Create appropriate style based on lyrics'}
 
-AKKORD INFORMÁCIÓ:
-${sunoData.chords || 'Nincs megadva - találj ki megfelelő akkordokat'}
+MELODY INFORMATION:
+${sunoData.melody || 'Create appropriate melody description'}
 
-Készítsd el a Suno AI promptot ANGOL NYELVEN, MAXIMUM 1000 karakterben!
+CHORD INFORMATION:
+${sunoData.chords || 'Create appropriate chord suggestions'}
 
-A prompt tartalmazzon:
-- Zenei stílus és műfaj (pl. indie folk, pop rock)
-- Hangszínek és hangszerelés
-- Tempó és hangulat
-- Dalszöveg struktúra jelölőkkel: [Verse], [Chorus], [Bridge], stb.
+Create a Suno STYLE prompt in ENGLISH, maximum 1000 characters.
 
-Példa formátum:
+The prompt should include:
+- [Verse] section with instrumentation and vocal style
+- [Chorus] section with melody and energy description
+- [Bridge] section (if appropriate)
+- Emotions in parentheses like (melancholic, hopeful)
+- Overall style, tempo, mood, instruments
+- Production notes
+
+Example format:
 [Verse]
 Acoustic guitar, melancholic indie folk
 Soft male vocals, intimate
-[Chorus]
-Uplifting, soaring melody
-Layered harmonies
-[Bridge]
-Piano, emotional crescendo
+(emotional, vulnerable)
 
-Add vissza CSAK a promptot, semmi mást!
+[Chorus]
+Uplifting melody, layered harmonies
+(hopeful, soaring)
+
+Style: Alternative folk
+Tempo: 75 BPM
+Mood: Reflective
+
+Return ONLY the style prompt in English, NO lyrics!
 `;
-                
                 const response = await fetch('/.netlify/functions/gemini', {
                     method: 'POST',
                     body: JSON.stringify({ 
