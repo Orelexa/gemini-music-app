@@ -48,8 +48,14 @@ exports.handler = async (event) => {
         model: "gemini-2.5-flash-image"
       });
       
+      // Pontosított prompt felirat nélküli képhez 2:3 arányban
+      const enhancedPrompt = `${prompt}. 
+FONTOS: A képen NE legyen SEMMIFÉLE szöveg, felirat, betű vagy írás! 
+Csak vizuális elemek legyenek: tárgyak, természet, hangszerek, jelenetek.
+Fotorealisztikus stílus, művészi borítókép, 2:3 (portrait) formátum.`;
+      
       try {
-        const result = await model.generateContent(prompt);
+        const result = await model.generateContent(enhancedPrompt);
         const response = await result.response;
         
         // Keressük meg a base64 képet a válaszban
@@ -83,7 +89,7 @@ exports.handler = async (event) => {
       }
       
     } else if (mode === 'rhyme-search') {
-      // Rímkereső modell, nagyon alacsony kreativitással
+      // Rímkereső modell
       model = genAI.getGenerativeModel({ 
         model: "gemini-2.0-flash-exp",
         generationConfig: {
@@ -114,7 +120,7 @@ exports.handler = async (event) => {
         systemInstruction: `Te egy ZENESZERZŐ vagy. A feladatod, hogy dallam ötleteket adj a dalszöveghez: milyen legyen a dallam íve, ritmus, hangterjedelme, karaktere. Adj konkrét javaslatokat.`
       });
     } else if (mode === 'chord-progression') {
-      // Akkord progresszió generálás
+      // Akkord progresszió
       model = genAI.getGenerativeModel({ 
         model: "gemini-2.0-flash-exp",
         generationConfig: {
@@ -134,7 +140,7 @@ exports.handler = async (event) => {
         systemInstruction: `Te egy PROFI FORDÍTÓ vagy, aki dalszövegeket fordít magyarról angolra. A fordításnak meg kell őriznie a rímeket, a ritmust és az érzelmi töltetét. Ha kell, kreatívan alkalmazkodj, de maradj hű az eredeti jelentéshez és hangulathoz.`
       });
     } else if (mode === 'chat') {
-      // Chat modell, ami a dalszövegíró szerepben van
+      // Chat modell
       model = genAI.getGenerativeModel({ 
         model: "gemini-2.0-flash-exp",
         generationConfig: {
@@ -160,52 +166,25 @@ exports.handler = async (event) => {
     console.log("Generating content with mode:", mode);
 
     // Csak akkor generáljunk szöveges tartalmat, ha nem képgenerálás
-    if (mode === 'image-gen') {
-  // Képgenerálás Gemini 2.5 Flash Image modellel
-  model = genAI.getGenerativeModel({ 
-    model: "gemini-2.5-flash-image"
-  });
-  
-  // Pontosított prompt felirat nélküli képhez 2:3 arányban
-  const enhancedPrompt = `${prompt}. 
-FONTOS: A képen NE legyen SEMMIFÉLE szöveg, felirat, betű vagy írás! 
-Csak vizuális elemek legyenek: tárgyak, természet, hangszerek, jelenetek.
-Fotorealisztikus stílus, művészi borítókép, 2:3 (portrait) formátum.`;
-  
-  try {
-    const result = await model.generateContent(enhancedPrompt);
-    const response = await result.response;
-    
-    // Keressük meg a base64 képet a válaszban
-    if (response.candidates && response.candidates[0]?.content?.parts) {
-      for (const part of response.candidates[0].content.parts) {
-        if (part.inlineData && part.inlineData.data) {
-          return {
-            statusCode: 200,
-            headers,
-            body: JSON.stringify({ 
-              image: part.inlineData.data,
-              mimeType: part.inlineData.mimeType || 'image/jpeg'
-            })
-          };
-        }
+    if (mode !== 'image-gen') {
+      const result = await model.generateContent(finalPrompt);
+      const response = await result.response;
+      const text = response.text();
+
+      if (!text || text.trim().length === 0) {
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: "Empty response from AI model" })
+        };
       }
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ message: text.trim() })
+      };
     }
-    
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: "Nem sikerült a képet generálni" })
-    };
-  } catch (imageError) {
-    console.error("Image generation error:", imageError);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: `Kép generálási hiba: ${imageError.message}` })
-    };
-  }
-}
 
   } catch (error) {
     console.error("Gemini API Error:", error);
