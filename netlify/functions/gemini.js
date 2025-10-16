@@ -99,6 +99,7 @@ Fotorealisztikus stílus, művészi borítókép, 2:3 (portrait) formátum.`;
         systemInstruction: `Te egy KIVÁLÓ rímkereső vagy. Egyetlen feladatod van: a megadott szóhoz rímelő szavak listáját adni. Csak a szavakat add meg, vesszővel elválasztva. Soha ne adj hozzá magyarázó szöveget vagy mondatot.`
       });
       finalPrompt = `Adj meg 5-10 szót, ami rímel a következő szóra: "${prompt}"`;
+      
     } else if (mode === 'music-style') {
       // Zenei stílus ajánlás
       model = genAI.getGenerativeModel({ 
@@ -109,6 +110,7 @@ Fotorealisztikus stílus, művészi borítókép, 2:3 (portrait) formátum.`;
         },
         systemInstruction: `Te egy ZENEI SZAKÉRTŐ vagy. A feladatod, hogy a dalszöveg alapján ajánlj zenei stílusokat, műfajokat, hangulatokat és tempót. Legyél konkrét és praktikus.`
       });
+      
     } else if (mode === 'melody-ideas') {
       // Dallam ötletek
       model = genAI.getGenerativeModel({ 
@@ -119,6 +121,7 @@ Fotorealisztikus stílus, művészi borítókép, 2:3 (portrait) formátum.`;
         },
         systemInstruction: `Te egy ZENESZERZŐ vagy. A feladatod, hogy dallam ötleteket adj a dalszöveghez: milyen legyen a dallam íve, ritmus, hangterjedelme, karaktere. Adj konkrét javaslatokat.`
       });
+      
     } else if (mode === 'chord-progression') {
       // Akkord progresszió
       model = genAI.getGenerativeModel({ 
@@ -129,57 +132,94 @@ Fotorealisztikus stílus, művészi borítókép, 2:3 (portrait) formátum.`;
         },
         systemInstruction: `Te egy HARMONIZÁLÓ SZAKÉRTŐ vagy. A feladatod, hogy akkord progressziókat ajánlj a dalszöveghez különböző hangnemekben. Adj meg konkrét akkord sorokat (pl. C - Am - F - G) és magyarázd el, miért illenek a dalhoz.`
       });
+      
     } else if (mode === 'translate-english') {
-      // Angol fordítás
+      // Angol fordítás - SUNO formátummal
       model = genAI.getGenerativeModel({ 
         model: "gemini-2.0-flash-exp",
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 2048
         },
-        systemInstruction: `Te egy PROFI FORDÍTÓ vagy, aki dalszövegeket fordít magyarról angolra. A fordításnak meg kell őriznie a rímeket, a ritmust és az érzelmi töltetét. Ha kell, kreatívan alkalmazkodj, de maradj hű az eredeti jelentéshez és hangulathoz.`
+        systemInstruction: `Te egy PROFI FORDÍTÓ vagy, aki dalszövegeket fordít magyarról angolra SUNO AI formátumban.
+
+KRITIKUS SZABÁLYOK:
+1. Őrizd meg a [Verse], [Chorus], [Bridge] struktúrát!
+2. Őrizd meg az érzelmeket () zárójelben!
+3. A fordításnak meg kell őriznie a rímeket, ritmust és érzelmi töltetét
+4. Kreatívan alkalmazkodj, de maradj hű az eredeti jelentéshez
+5. CSAK a lefordított dalszöveget add vissza, semmi mást!`
       });
-      } else if (mode === 'suno-prompt') {
-  // Suno prompt generálás
-  model = genAI.getGenerativeModel({ 
-    model: "gemini-2.0-flash-exp",
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 1000
-    },
-    systemInstruction: `Te egy SUNO AI PROMPT SZAKÉRTŐ vagy. A feladatod, hogy a megadott információk alapján egy tökéletes, ANGOL NYELVŰ Suno AI promptot készíts.
+      
+    } else if (mode === 'suno-prompt') {
+      // Suno STYLE prompt generálás (csak stílus, NEM dalszöveg!)
+      model = genAI.getGenerativeModel({ 
+        model: "gemini-2.0-flash-exp",
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 800
+        },
+        systemInstruction: `Te egy SUNO AI STYLE PROMPT SZAKÉRTŐ vagy. A feladatod, hogy CSAK a zenei stílus, hangulat, hangszerelés leírását add meg ANGOL NYELVEN.
 
-FONTOS SZABÁLYOK:
-1. Maximum 1000 karakter
-2. Angol nyelvű legyen minden
-3. Tartalmazza: zenei stílus, hangulat, tempó, hangszerelés
-4. Konkrét, leíró jelzők
-5. Formátum: [Verse], [Chorus], [Bridge] stb. használata
-6. Rövid, tömör, hatásos
+KRITIKUS SZABÁLYOK:
+1. NE írj dalszöveget! Csak zenei stílus leírást!
+2. ANGOL nyelvű legyen
+3. Maximum 1000 karakter
+4. Használd a [Verse], [Chorus], [Bridge] struktúrát
+5. Add meg az érzelmeket () zárójelben
+6. Konkrét zenei jellemzők: műfaj, hangszerek, tempó, hangulat
 
-Példa jó prompt:
-"[Verse]
-Acoustic guitar, melancholic indie folk, soft male vocals
-Slow tempo, intimate atmosphere
+PÉLDA JÓ FORMÁTUM:
+[Verse]
+Melancholic indie folk, acoustic guitar fingerpicking
+Soft male vocals, intimate atmosphere
+Slow tempo (70 BPM)
+(emotional, vulnerable, introspective)
+
 [Chorus]
-Uplifting, hopeful melody, layered harmonies
-[Bridge]
-Minimal piano, emotional crescendo"
+Uplifting melody with layered harmonies
+Building intensity, soaring vocals
+Electric guitar enters softly
+(empowering, hopeful, liberating)
 
-Add vissza CSAK a promptot, semmi extra szöveget!`
-  });
-} else if (mode === 'chat') {
+[Bridge]
+Minimal piano with strings
+Emotional crescendo building to climax
+(raw, heartfelt, cathartic)
+
+Overall style: Alternative folk-rock
+Instruments: Acoustic guitar, piano, strings, light percussion
+Mood: Reflective and bittersweet with hopeful undertones
+Production: Warm, organic, slightly reverb-heavy
+
+FONTOS: Ne írj dalszöveget! Csak stílus leírást angolul!`
+      });
+      
     } else if (mode === 'chat') {
-      // Chat modell
+      // Chat modell - SUNO formátummal
       model = genAI.getGenerativeModel({ 
         model: "gemini-2.0-flash-exp",
         generationConfig: {
           temperature: 0.8
         },
-        systemInstruction: `Te egy PROFI MAGYAR KÖLTŐ vagy, aki dalszövegeket ír. A dalszövegeknek mély érzelmeket kell közvetíteniük, tökéletes rímekkel, és szigorúan követniük kell a kért versformátumot. A feladatod, hogy a megadott téma, stílus és szerkezet alapján a legjobb minőségű dalszöveget készítsd el, amely magával ragadó és hibátlan. Ne írj kiegészítő szöveget a dalszöveg elé vagy után. Kizárólag a dalszöveg legyen a válaszod.`
+        systemInstruction: `Te egy PROFI MAGYAR KÖLTŐ vagy, aki Suno AI-hoz készít dalszövegeket.
+
+KRITIKUS SZABÁLYOK:
+1. A dalszövegnek SUNO FORMÁTUMBAN kell lennie!
+2. Használd ezeket a jelöléseket:
+   - [Verse 1], [Verse 2], stb. a versszakok elején
+   - [Chorus] a refrén elején
+   - [Bridge] ha van átvezetés
+   - [Outro] ha van befejező rész
+3. Minden szakasz ELŐTT adj meg érzelmeket () zárójelben
+4. Tökéletes rímek és ritmus
+5. Mély érzelmek
+6. NE írj semmi extra szöveget
+7. CSAK a dalszöveg legyen a válaszban a jelölésekkel!`
       });
+      
     } else {
-      // Dalszöveg generáló modell (lyrics-gen)
+      // Dalszöveg generáló modell (lyrics-gen) - SUNO formátummal
       model = genAI.getGenerativeModel({ 
         model: "gemini-2.0-flash-exp",
         generationConfig: {
@@ -189,7 +229,39 @@ Add vissza CSAK a promptot, semmi extra szöveget!`
           maxOutputTokens: 2048,
           responseMimeType: "text/plain"
         },
-        systemInstruction: `Te egy PROFI MAGYAR KÖLTŐ vagy, aki dalszövegeket ír. A dalszövegeknek mély érzelmeket kell közvetíteniük, tökéletes rímekkel, és szigorúan követniük kell a kért versformátumot. A feladatod, hogy a megadott téma, stílus és szerkezet alapján a legjobb minőségű dalszöveget készítsd el, amely magával ragadó és hibátlan. Ne írj kiegészítő szöveget a dalszöveg elé vagy után. Kizárólag a dalszöveg legyen a válaszod.`
+        systemInstruction: `Te egy PROFI MAGYAR KÖLTŐ vagy, aki Suno AI-hoz készít dalszövegeket.
+
+KRITIKUS SZABÁLYOK:
+1. A dalszövegnek SUNO FORMÁTUMBAN kell lennie!
+2. Használd ezeket a jelöléseket:
+   - [Verse 1], [Verse 2], stb. a versszakok elején
+   - [Chorus] a refrén elején
+   - [Bridge] ha van átvezetés
+   - [Outro] ha van befejező rész
+3. Minden szakasz ELŐTT adj meg érzelmeket () zárójelben, pl:
+   (melancholic, soft) vagy (uplifting, powerful)
+4. Tökéletes rímek és ritmus
+5. Mély érzelmek
+6. Szigorúan kövesd a kért versformátumot
+7. NE írj semmi extra szöveget a dalszöveg elé vagy után
+8. CSAK a dalszöveg legyen a válaszban a jelölésekkel!
+
+PÉLDA FORMÁTUM:
+[Verse 1]
+(melancholic, introspective)
+Az éjszaka csendben hull
+Csillagok fénye rám talál
+Szívemben a fájdalom ül
+De tudom, holnap új nap vár
+
+[Chorus]
+(uplifting, powerful)
+Repülök a felhők felett
+Szabad vagyok végre, érzem
+A szél visz engem tovább
+És semmi sem állít meg
+
+Így kell kinéznie MINDEN dalszövegnek!`
       });
     }
 
