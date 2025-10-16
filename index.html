@@ -475,6 +475,7 @@
                     <button class="tab" data-tab="style">🎸 Zenei Stílus</button>
                     <button class="tab" data-tab="melody">🎵 Dallam Ötletek</button>
                     <button class="tab" data-tab="chords">🎹 Akkordok</button>
+                    <button class="tab" data-tab="suno">🎵 Suno Prompt</button>
                 </div>
 
                 <!-- Borítókép generálás -->
@@ -525,6 +526,53 @@
                     <div class="output-box" id="chords-output">Kérj akkord progresszió ajánlást a dalszövegedhez!</div>
                 </div>
             </div>
+            <!-- Suno Prompt -->
+<div class="tab-content" id="suno-content">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <div class="info-box" style="margin-bottom: 20px;">
+            <strong>ℹ️ Hogyan működik:</strong>
+            <p>1. Generálj dalszöveget (magyar vagy angol)</p>
+            <p>2. Opcionálisan használd a többi AI eszközt (Zenei Stílus, Dallam, Akkordok)</p>
+            <p>3. Az adatok automatikusan összegyűlnek</p>
+            <p>4. Kattints a gombra → Kész a Suno-kompatibilis prompt!</p>
+        </div>
+
+        <div class="form-group">
+            <label>📝 Dalszöveg (automatikusan töltődik):</label>
+            <textarea id="suno-lyrics" rows="6" placeholder="A generált dalszöveg automatikusan ide kerül..." readonly style="background: #2a2a2a;"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>🎸 Zenei stílus (automatikusan töltődik):</label>
+            <textarea id="suno-style" rows="3" placeholder="A zenei stílus ajánlás automatikusan ide kerül..." readonly style="background: #2a2a2a;"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>🎵 Dallam info (automatikusan töltődik):</label>
+            <textarea id="suno-melody" rows="3" placeholder="A dallam ötletek automatikusan ide kerülnek..." readonly style="background: #2a2a2a;"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>🎹 Akkordok (automatikusan töltődik):</label>
+            <textarea id="suno-chords" rows="2" placeholder="Az akkord progresszió automatikusan ide kerül..." readonly style="background: #2a2a2a;"></textarea>
+        </div>
+
+        <button class="btn" id="generate-suno-btn" style="width: 100%; margin: 20px 0;">
+            🎵 Suno Prompt Generálása
+        </button>
+
+        <div id="suno-output" style="display: none;">
+            <h3>✨ Generált Suno Prompt:</h3>
+            <div style="background: #1a1a1a; padding: 20px; border-radius: 8px; border: 2px solid #9333ea; position: relative;">
+                <pre id="suno-result" style="white-space: pre-wrap; word-wrap: break-word; color: #fff; margin: 0;"></pre>
+                <button class="btn" id="copy-suno-btn" style="margin-top: 15px;">
+                    📋 Másolás Suno-ba
+                </button>
+                <div id="suno-char-count" style="margin-top: 10px; color: #888; font-size: 14px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
             <!-- Mentett dalszövegek -->
             <div class="section">
@@ -1122,6 +1170,7 @@ function hideOutputActions() {
     if (translateBtn) translateBtn.style.display = 'none';
 }
 
+
         function copyToClipboard() {
             const outputTextarea = document.getElementById('output');
             const text = outputTextarea.value;
@@ -1172,6 +1221,267 @@ function hideOutputActions() {
         // Oldal betöltésekor
         window.addEventListener('load', () => {
             loadSavedLyrics();
+        });
+        // ==========================================
+        // SUNO PROMPT GENERÁTOR
+        // ==========================================
+
+        // Automatikus adatgyűjtés tárolója
+        let sunoData = {
+            lyrics: '',
+            style: '',
+            melody: '',
+            chords: ''
+        };
+
+        // Zenei stílus kérése - módosított verzió
+        document.getElementById('get-style-btn').addEventListener('click', async function() {
+            const lyrics = document.getElementById('output').value.trim();
+            if (!lyrics) {
+                document.getElementById('style-output').textContent = 'Először generálj egy dalszöveget!';
+                return;
+            }
+
+            const btn = this;
+            const output = document.getElementById('style-output');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Generálás...';
+            output.textContent = 'Zenei stílus ajánlás generálása folyamatban...';
+
+            try {
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        prompt: lyrics,
+                        mode: 'music-style'
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.message) {
+                    output.textContent = data.message;
+                    // Suno számára mentés
+                    sunoData.style = data.message;
+                    document.getElementById('suno-style').value = data.message;
+                } else {
+                    output.textContent = 'Hiba: ' + (data.error || 'Ismeretlen hiba');
+                }
+            } catch (error) {
+                output.textContent = 'Hiba: ' + error.message;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🎸 Zenei Stílus Ajánlás Kérése';
+            }
+        });
+
+        // Dallam ötletek kérése
+        document.getElementById('get-melody-btn').addEventListener('click', async function() {
+            const lyrics = document.getElementById('output').value.trim();
+            if (!lyrics) {
+                document.getElementById('melody-output').textContent = 'Először generálj egy dalszöveget!';
+                return;
+            }
+
+            const btn = this;
+            const output = document.getElementById('melody-output');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Generálás...';
+            output.textContent = 'Dallam ötletek generálása folyamatban...';
+
+            try {
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        prompt: lyrics,
+                        mode: 'melody-ideas'
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.message) {
+                    output.textContent = data.message;
+                    // Suno számára mentés
+                    sunoData.melody = data.message;
+                    document.getElementById('suno-melody').value = data.message;
+                } else {
+                    output.textContent = 'Hiba: ' + (data.error || 'Ismeretlen hiba');
+                }
+            } catch (error) {
+                output.textContent = 'Hiba: ' + error.message;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🎵 Dallam Ötletek Kérése';
+            }
+        });
+
+        // Akkord progresszió kérése
+        document.getElementById('get-chords-btn').addEventListener('click', async function() {
+            const lyrics = document.getElementById('output').value.trim();
+            if (!lyrics) {
+                document.getElementById('chords-output').textContent = 'Először generálj egy dalszöveget!';
+                return;
+            }
+
+            const btn = this;
+            const output = document.getElementById('chords-output');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Generálás...';
+            output.textContent = 'Akkord progresszió generálása folyamatban...';
+
+            try {
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        prompt: lyrics,
+                        mode: 'chord-progression'
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.message) {
+                    output.textContent = data.message;
+                    // Suno számára mentés
+                    sunoData.chords = data.message;
+                    document.getElementById('suno-chords').value = data.message;
+                } else {
+                    output.textContent = 'Hiba: ' + (data.error || 'Ismeretlen hiba');
+                }
+            } catch (error) {
+                output.textContent = 'Hiba: ' + error.message;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🎹 Akkord Progresszió Kérése';
+            }
+        });
+
+        // Suno Prompt Generálás
+        document.getElementById('generate-suno-btn').addEventListener('click', async function() {
+            // Frissítjük a dalszöveget
+            const currentLyrics = document.getElementById('output').value.trim();
+            
+            if (!currentLyrics) {
+                alert('Először generálj egy dalszöveget!');
+                return;
+            }
+
+            // Mentjük az aktuális dalszöveget
+            sunoData.lyrics = currentLyrics;
+            document.getElementById('suno-lyrics').value = currentLyrics;
+
+            const btn = this;
+            const output = document.getElementById('suno-output');
+            const result = document.getElementById('suno-result');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Generálás...';
+            
+            try {
+                // Összeállítjuk a prompt-ot az AI számára
+                const promptForAI = `
+Készíts egy Suno AI promptot az alábbi információk alapján.
+
+DALSZÖVEG:
+${sunoData.lyrics}
+
+ZENEI STÍLUS AJÁNLÁS:
+${sunoData.style || 'Nincs megadva - találj ki megfelelő stílust a dalszöveg alapján'}
+
+DALLAM INFORMÁCIÓ:
+${sunoData.melody || 'Nincs megadva - találj ki megfelelő dallam jellemzőket'}
+
+AKKORD INFORMÁCIÓ:
+${sunoData.chords || 'Nincs megadva - találj ki megfelelő akkordokat'}
+
+Készítsd el a Suno AI promptot ANGOL NYELVEN, MAXIMUM 1000 karakterben!
+
+A prompt tartalmazzon:
+- Zenei stílus és műfaj (pl. indie folk, pop rock)
+- Hangszínek és hangszerelés
+- Tempó és hangulat
+- Dalszöveg struktúra jelölőkkel: [Verse], [Chorus], [Bridge], stb.
+
+Példa formátum:
+[Verse]
+Acoustic guitar, melancholic indie folk
+Soft male vocals, intimate
+[Chorus]
+Uplifting, soaring melody
+Layered harmonies
+[Bridge]
+Piano, emotional crescendo
+
+Add vissza CSAK a promptot, semmi mást!
+`;
+                
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        prompt: promptForAI,
+                        mode: 'suno-prompt'
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.message) {
+                    let sunoPrompt = data.message.trim();
+                    
+                    // Ha túl hosszú, figyelmeztetés
+                    if (sunoPrompt.length > 1000) {
+                        sunoPrompt = sunoPrompt.substring(0, 1000);
+                    }
+                    
+                    result.textContent = sunoPrompt;
+                    output.style.display = 'block';
+                    
+                    // Karakter számláló
+                    const charCount = sunoPrompt.length;
+                    const charCountEl = document.getElementById('suno-char-count');
+                    charCountEl.textContent = `📊 ${charCount} / 1000 karakter ${charCount > 1000 ? '⚠️ (Levágva 1000 karakterre)' : '✅'}`;
+                    charCountEl.style.color = charCount > 1000 ? '#ff6b6b' : '#51cf66';
+                } else {
+                    alert('Hiba: ' + (data.error || 'Ismeretlen hiba'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Hiba történt a generálás során!');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🎵 Suno Prompt Generálása';
+            }
+        });
+
+        // Másolás gomb
+        document.getElementById('copy-suno-btn').addEventListener('click', function() {
+            const text = document.getElementById('suno-result').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = this;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Másolva!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                alert('Másolás sikertelen! Kérlek, másold ki manuálisan.');
+            });
         });
     </script>
 </body>
