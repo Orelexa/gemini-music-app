@@ -373,6 +373,13 @@
             display: block;
         }
 
+        /* Interaktív Szerkesztő flexbox layout */
+        #interactive-content.tab-content.active {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+        }
+
         @media (max-width: 1200px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -576,8 +583,7 @@
 </div>
 
             <!-- Interaktív Szerkesztő -->
-            <div class="tab-content" id="interactive-content" style="display: block;">
-                <div style="display: flex; width: 100%;">
+            <div class="tab-content" id="interactive-content">
 
                     <!-- 1. Kártya: Szöveg Szerkesztő - 40% -->
                     <div style="width: 40%; padding: 20px; box-sizing: border-box; background: rgba(40, 40, 40, 0.8); border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);">
@@ -644,7 +650,6 @@
                         </button>
                     </div>
 
-                </div>
             </div>
 
         </div>
