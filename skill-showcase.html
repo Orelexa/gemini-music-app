@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code Skill Rendszer - Interaktív Bemutató</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #b0b0b0;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .section {
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .section h2 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section h3 {
+            color: #8b9cff;
+            font-size: 1.5rem;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        .skill-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .skill-card {
+            background: rgba(50, 50, 50, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .skill-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .skill-card h4 {
+            color: #667eea;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .skill-card p {
+            color: #b0b0b0;
+            margin-bottom: 15px;
+        }
+
+        .code-block {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block pre {
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .code-block .comment {
+            color: #6a9955;
+        }
+
+        .code-block .keyword {
+            color: #569cd6;
+        }
+
+        .code-block .string {
+            color: #ce9178;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .demo-section {
+            background: rgba(20, 20, 20, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .interactive-demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .demo-input {
+            background: rgba(40, 40, 40, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .demo-output {
+            background: rgba(40, 40, 40, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            background: rgba(30, 30, 30, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            color: #e0e0e0;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            margin-top: 15px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .feature-list li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #b0b0b0;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .workflow-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .workflow-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            background: rgba(50, 50, 50, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            color: #8b9cff;
+            margin-bottom: 8px;
+        }
+
+        .step-content p {
+            color: #b0b0b0;
+        }
+
+        .highlight {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .interactive-demo {
+                grid-template-columns: 1fr;
+            }
+
+            .skill-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .output-text {
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            line-height: 1.8;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .info-box strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1>Claude Code Skill Rendszer</h1>
+            <p>Fedezd fel, hogyan bővítheted Claude Code képességeit egyedi skill-ekkel. Ez az interaktív bemutató megmutatja, hogyan hozhatod létre és használhatod a saját AI képességeidet.</p>
+        </div>
+
+        <!-- Mi az a Skill? -->
+        <div class="section">
+            <h2>🎯 Mi az a Skill?</h2>
+            <p>A <span class="highlight">Skill</span> egy olyan speciális képesség vagy funkció, amelyet hozzáadhatsz Claude Code-hoz, hogy kibővítsd az AI asszisztens tudását és funkcionalitását. Gondolj rá úgy, mint egy plugin vagy bővítmény, amely specifikus feladatokra specializálódik.</p>
+
+            <ul class="feature-list">
+                <li>Automatizált workflow-k létrehozása</li>
+                <li>Domain-specifikus tudás hozzáadása</li>
+                <li>Ismétlődő feladatok egyszerűsítése</li>
+                <li>Projektspecifikus eszközök integrálása</li>
+                <li>Csapat által megosztható képességek</li>
+            </ul>
+        </div>
+
+        <!-- Skill Példák -->
+        <div class="section">
+            <h2>💡 Népszerű Skill Példák</h2>
+
+            <div class="skill-grid">
+                <div class="skill-card">
+                    <h4>📄 PDF Kezelő</h4>
+                    <p>PDF fájlok olvasása, elemzése és konvertálása. Képes szöveg kinyerésre, struktúra elemzésre és tartalom összefoglalásra.</p>
+                    <span class="badge">Dokumentumok</span>
+                    <span class="badge">Automatizálás</span>
+                </div>
+
+                <div class="skill-card">
+                    <h4>📊 Excel Varázsló</h4>
+                    <p>Excel fájlok létrehozása, szerkesztése, adatelemzés készítése. Képletek, grafikonok, pivot táblák automatikus generálása.</p>
+                    <span class="badge">Adatelemzés</span>
+                    <span class="badge">Riportok</span>
+                </div>
+
+                <div class="skill-card">
+                    <h4>🧪 Teszt Generátor</h4>
+                    <p>Automatikus unit testek, integrációs tesztek és E2E tesztek létrehozása a kódbázis alapján.</p>
+                    <span class="badge">Tesztelés</span>
+                    <span class="badge">QA</span>
+                </div>
+
+                <div class="skill-card">
+                    <h4>📝 Dokumentáció Író</h4>
+                    <p>Automatikus API dokumentáció, README fájlok és fejlesztői útmutatók készítése a kódból.</p>
+                    <span class="badge">Dokumentáció</span>
+                    <span class="badge">Markdown</span>
+                </div>
+
+                <div class="skill-card">
+                    <h4>🔍 Kód Elemző</h4>
+                    <p>Kód minőség ellenőrzése, security audit, performance optimalizálási javaslatok készítése.</p>
+                    <span class="badge">Code Review</span>
+                    <span class="badge">Security</span>
+                </div>
+
+                <div class="skill-card">
+                    <h4>🌐 API Integrátor</h4>
+                    <p>RESTful és GraphQL API-k automatikus integrálása, dokumentáció alapján kliens generálás.</p>
+                    <span class="badge">API</span>
+                    <span class="badge">Backend</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hogyan Működik? -->
+        <div class="section">
+            <h2>⚙️ Hogyan Működik a Skill Rendszer?</h2>
+
+            <div class="workflow-steps">
+                <div class="workflow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Skill Létrehozása</h4>
+                        <p>Létrehozol egy skill fájlt, amely tartalmazza az utasításokat és a funkcionalitást. Ez lehet egy egyszerű prompt vagy komplex logic.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Skill Regisztrálása</h4>
+                        <p>A skill fájlt elhelyezed a megfelelő könyvtárban, ahol Claude Code automatikusan felismeri és betölti.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Skill Használata</h4>
+                        <p>Egyszerűen meghívod a skill nevet, és Claude Code aktiválja a speciális képességet a feladatodhoz.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Eredmény Feldolgozása</h4>
+                        <p>A skill végrehajtja a feladatot, és visszaadja az eredményt, amelyet tovább használhatsz vagy módosíthatsz.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Példa Skill Létrehozásra -->
+        <div class="section">
+            <h2>🔨 Skill Létrehozása - Gyakorlati Példa</h2>
+
+            <h3>1. Egyszerű Skill Struktúra</h3>
+            <p>Íme egy példa egy egyszerű "Code Reviewer" skill-re:</p>
+
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Másolás</button>
+                <pre><span class="comment"># .claude/skills/code-reviewer.md</span>
+
+<span class="keyword">name:</span> <span class="string">code-reviewer</span>
+<span class="keyword">description:</span> <span class="string">Átfogó kód review készítése security, performance és best practices szempontból</span>
+
+<span class="comment">## Feladat</span>
+Elemezd a megadott kódot és készíts részletes reviewt a következő szempontok alapján:
+
+1. <span class="highlight">Security Issues</span> - Potenciális biztonsági rések azonosítása
+2. <span class="highlight">Performance</span> - Teljesítmény optimalizálási lehetőségek
+3. <span class="highlight">Best Practices</span> - Kódolási standardok betartása
+4. <span class="highlight">Code Smell</span> - Rossz kód minták felderítése
+5. <span class="highlight">Recommendations</span> - Konkrét javítási javaslatok
+
+<span class="comment">## Kimenet Formátum</span>
+- Strukturált markdown riport
+- Prioritizált problémák listája
+- Példakódok a javításokhoz
+- Összefoglaló pontszám (1-10)</pre>
+            </div>
+
+            <h3>2. Haladó Skill - API Dokumentáció Generátor</h3>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Másolás</button>
+                <pre><span class="comment"># .claude/skills/api-doc-generator.md</span>
+
+<span class="keyword">name:</span> <span class="string">api-doc-generator</span>
+<span class="keyword">description:</span> <span class="string">OpenAPI/Swagger dokumentáció generálása endpoint-okból</span>
+
+<span class="comment">## Utasítások</span>
+1. Olvasd be az összes API endpoint fájlt a projektből
+2. Elemezd a route definíciókat, controller-eket és middleware-eket
+3. Generálj OpenAPI 3.0 kompatibilis YAML dokumentációt
+4. Tartalmazzon minden endpoint-hoz:
+   - HTTP metódus és útvonal
+   - Request paraméterek (path, query, body)
+   - Response sémák példákkal
+   - Authentication követelmények
+   - Error response-ok
+
+<span class="comment">## Példa Használat</span>
+<span class="string">"Generálj API dokumentációt a /api/users endpoint-okhoz"</span>
+
+<span class="comment">## Tools Available</span>
+- Glob: fájl keresés
+- Grep: kód keresés
+- Read: fájl olvasás
+- Write: dokumentáció mentése</pre>
+            </div>
+        </div>
+
+        <!-- Interaktív Demo -->
+        <div class="section">
+            <h2>🎮 Interaktív Demo - Skill Szimulátor</h2>
+            <p>Próbáld ki, hogyan működne egy "Code Explainer" skill! Add meg a kódot, és a skill elmagyarázza neked.</p>
+
+            <div class="demo-section">
+                <div class="interactive-demo">
+                    <div class="demo-input">
+                        <h4 style="color: #8b9cff; margin-bottom: 15px;">📝 Kód Bemenet</h4>
+                        <textarea id="codeInput" placeholder="Illessz be egy kódrészletet, amit el szeretnél magyaráztatni...">function fibonacci(n) {
+    if (n <= 1) return n;
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}</textarea>
+                        <button class="btn" onclick="explainCode()">🔍 Kód Elemzése</button>
+                    </div>
+
+                    <div class="demo-output">
+                        <h4 style="color: #8b9cff; margin-bottom: 15px;">💬 Skill Kimenet</h4>
+                        <div id="outputArea" class="output-text">Itt jelenik meg a skill által generált magyarázat...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box" style="margin-top: 20px;">
+                <strong>💡 Tipp:</strong> Ez egy egyszerűsített demo. Valódi skill esetén Claude Code teljes hozzáféréssel rendelkezik a projekt fájljaihoz, external API-khoz, és képes komplex workflow-kat végrehajtani.
+            </div>
+        </div>
+
+        <!-- Skill Előnyök -->
+        <div class="section">
+            <h2>✨ Miért Használj Skill-eket?</h2>
+
+            <div class="skill-grid">
+                <div class="skill-card">
+                    <h4>⚡ Hatékonyság</h4>
+                    <p>Automatizáld az ismétlődő feladatokat és spórolj időt a fejlesztésben. Egy skill percek alatt elvégez olyan munkát, ami órákig tartana.</p>
+                </div>
+
+                <div class="skill-card">
+                    <h4>🎯 Konzisztencia</h4>
+                    <p>Biztosítsd, hogy minden csapattag ugyanazt a minőséget és standardot kövesse. A skill-ek garantálják az egységes output-ot.</p>
+                </div>
+
+                <div class="skill-card">
+                    <h4>🧠 Tudás Megosztás</h4>
+                    <p>A domain expertízát skill formájában rögzítheted és megoszthatod. Így a csapat összes tagja hozzáfér a speciális tudáshoz.</p>
+                </div>
+
+                <div class="skill-card">
+                    <h4>🔧 Testreszabhatóság</h4>
+                    <p>Készíts projekt-specifikus skill-eket, amelyek pontosan a te igényeidre szabottak. Nincs két egyforma projekt!</p>
+                </div>
+
+                <div class="skill-card">
+                    <h4>📚 Tanulás</h4>
+                    <p>A skill-ek interakciója során tanulhatsz új technikákat és best practice-eket. Ez egy folyamatos fejlődési lehetőség.</p>
+                </div>
+
+                <div class="skill-card">
+                    <h4>🚀 Skálázhatóság</h4>
+                    <p>Ahogy a projekt nő, a skill-ek együtt nőnek vele. Bővítsd a képességeket szükség szerint anélkül, hogy átírnád a rendszert.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Best Practices -->
+        <div class="section">
+            <h2>📋 Skill Fejlesztési Best Practices</h2>
+
+            <div class="workflow-steps">
+                <div class="workflow-step">
+                    <div class="step-number">✓</div>
+                    <div class="step-content">
+                        <h4>Egy Skill, Egy Felelősség</h4>
+                        <p>Tartsd a skill-eket fókuszáltnak. Egy skill egy jól definiált feladatot végezzen el, ne próbáljon mindent egyszerre.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">✓</div>
+                    <div class="step-content">
+                        <h4>Részletes Dokumentáció</h4>
+                        <p>Adj világos utasításokat, példákat és várható kimeneteket. Minél jobban dokumentált, annál hatékonyabb lesz.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">✓</div>
+                    <div class="step-content">
+                        <h4>Verziókezelés</h4>
+                        <p>Tartsd karban a skill verzióit, dokumentáld a változásokat. Git repository-ban tárolva könnyen kezelhető.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">✓</div>
+                    <div class="step-content">
+                        <h4>Tesztelés</h4>
+                        <p>Próbáld ki a skill-t különböző forgatókönyvekkel, mielőtt megosztod a csapattal. Biztosítsd a megbízhatóságot.</p>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">✓</div>
+                    <div class="step-content">
+                        <h4>Hibakezelés</h4>
+                        <p>Építs be megfelelő error handling-et és fallback mechanizmusokat. Mi van, ha valami nem a várt módon történik?</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kezdj Hozzá -->
+        <div class="section">
+            <h2>🚀 Kezdj Hozzá Ma!</h2>
+            <p>A skill-ek használata egyszerű és hatékony módja annak, hogy Claude Code-ot a saját igényeidhez igazítsd.</p>
+
+            <div class="info-box">
+                <strong>📦 Telepítés:</strong>
+                <ol style="margin-top: 10px; margin-left: 20px; color: #b0b0b0;">
+                    <li>Hozz létre egy <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">.claude/skills/</code> könyvtárat a projektedben</li>
+                    <li>Készíts egy új <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">.md</code> fájlt a skill leírásával</li>
+                    <li>Add meg a skill nevét, leírását és utasításait</li>
+                    <li>Használd a skill-t Claude Code-ban: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">/skill-name</code></li>
+                </ol>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <p style="font-size: 1.1rem; margin-bottom: 20px;">Készen állsz kipróbálni? Kezdd el építeni a saját skill könyvtáradat!</p>
+                <button class="btn" onclick="window.open('https://docs.claude.com', '_blank')" style="font-size: 18px; padding: 15px 40px;">📚 Dokumentáció Megtekintése</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Kód másolás funkció
+        function copyCode(btn) {
+            const codeBlock = btn.nextElementSibling;
+            const text = codeBlock.textContent;
+
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Másolva!';
+                btn.style.background = '#51cf66';
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#667eea';
+                }, 2000);
+            }).catch(err => {
+                console.error('Másolás sikertelen:', err);
+            });
+        }
+
+        // Interaktív demo - kód magyarázat
+        function explainCode() {
+            const codeInput = document.getElementById('codeInput').value.trim();
+            const outputArea = document.getElementById('outputArea');
+
+            if (!codeInput) {
+                outputArea.innerHTML = '<span style="color: #ff6b6b;">⚠️ Kérlek, adj meg egy kódrészletet!</span>';
+                return;
+            }
+
+            // Loading state
+            outputArea.innerHTML = '<span class="loading"></span> Kód elemzése folyamatban...';
+
+            // Szimulált skill feldolgozás (valóságban ez Claude-hoz menne)
+            setTimeout(() => {
+                const explanation = generateExplanation(codeInput);
+                outputArea.innerHTML = explanation;
+            }, 1500);
+        }
+
+        function generateExplanation(code) {
+            // Egyszerű kód elemzés szimuláció
+            let explanation = '<strong style="color: #667eea;">📊 Kód Elemzés Eredménye:</strong>\n\n';
+
+            // Detektálunk néhány pattern-t
+            if (code.includes('function')) {
+                const functionMatch = code.match(/function\s+(\w+)/);
+                const functionName = functionMatch ? functionMatch[1] : 'ismeretlen';
+                explanation += `<strong>🎯 Funkció Neve:</strong> ${functionName}\n\n`;
+            }
+
+            if (code.includes('if')) {
+                explanation += '<strong>🔀 Vezérlési Struktúra:</strong> Feltételes elágazást tartalmaz (if statement)\n\n';
+            }
+
+            if (code.includes('return')) {
+                explanation += '<strong>↩️ Visszatérési Érték:</strong> A funkció visszaad egy értéket\n\n';
+            }
+
+            // Fibonacci specifikus
+            if (code.includes('fibonacci')) {
+                explanation += `<strong>💡 Mit Csinál?</strong>
+A Fibonacci sorozat n-edik elemét számolja ki rekurzív módon.
+
+<strong>⚠️ Teljesítmény:</strong>
+- Exponenciális időbonyolultság: O(2^n)
+- Nagyon lassú nagy n értékekre
+- Ismétlődő számítások: ugyanazokat az értékeket többször is kiszámolja
+
+<strong>✨ Optimalizálási Javaslatok:</strong>
+1. Használj memoizációt (cache-elés)
+2. Használj iteratív megközelítést
+3. Használj dinamikus programozást
+
+<strong>📝 Optimalizált Verzió:</strong>
+<code style="display: block; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; margin-top: 10px; white-space: pre;">function fibonacci(n, memo = {}) {
+    if (n in memo) return memo[n];
+    if (n <= 1) return n;
+    memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo);
+    return memo[n];
+}</code>
+
+<strong>🎯 Komplexitás Javulás:</strong> O(2^n) → O(n)`;
+            } else {
+                explanation += `<strong>💡 Általános Elemzés:</strong>
+A kód ${code.split('\n').length} sorból áll.
+${code.includes('const') || code.includes('let') ? '\n✓ Modern JavaScript szintaxis használata' : ''}
+${code.includes('=>') ? '\n✓ Arrow function használata' : ''}
+${code.includes('async') ? '\n✓ Aszinkron operációk kezelése' : ''}
+
+<strong>📚 Következő Lépések:</strong>
+- Add meg, hogy milyen szempontból szeretnéd elemezni
+- Kérhetsz performance analízist
+- Kérhetsz security review-t
+- Kérhetsz best practices javaslatokat`;
+            }
+
+            return explanation;
+        }
+
+        // Smooth scroll animation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Skill card click animation
+        document.querySelectorAll('.skill-card').forEach(card => {
+            card.addEventListener('click', function() {
+                this.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>
