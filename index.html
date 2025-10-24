@@ -1735,191 +1735,191 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 const currentText = interactiveEditor.value.trim();
                 const btn = this;
 
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading"></span> Generálás...';
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading"></span> Generálás...';
 
-            let prompt = '';
-            if (currentText) {
-                prompt = `Írj egy új versszakot ehhez a dalszöveghez. A versszak stílusa és témája illeszkedjen a meglévő szöveghez. 4-6 sor legyen.\n\nMeglévő szöveg:\n${currentText}\n\nCsak az új versszakot írd, semmi mást.`;
-            } else {
-                prompt = `Írj egy új dalszöveg versszakot. 4-6 sor legyen, érzelmes és költői. Csak a versszakot írd, semmi mást.`;
-            }
-
-            try {
-                const response = await fetch('/.netlify/functions/gemini', {
-                    method: 'POST',
-                    body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    const newVerse = data.message.trim();
-                    const start = interactiveEditor.selectionStart;
-                    const end = interactiveEditor.selectionEnd;
-                    const text = interactiveEditor.value;
-
-                    const before = text.substring(0, start);
-                    const after = text.substring(end);
-                    interactiveEditor.value = before + '\n\n' + newVerse + '\n\n' + after;
-                    updateInteractivePreview();
+                let prompt = '';
+                if (currentText) {
+                    prompt = `Írj egy új versszakot ehhez a dalszöveghez. A versszak stílusa és témája illeszkedjen a meglévő szöveghez. 4-6 sor legyen.\n\nMeglévő szöveg:\n${currentText}\n\nCsak az új versszakot írd, semmi mást.`;
                 } else {
-                    alert('Hiba: ' + (data.error || 'Ismeretlen hiba'));
+                    prompt = `Írj egy új dalszöveg versszakot. 4-6 sor legyen, érzelmes és költői. Csak a versszakot írd, semmi mást.`;
                 }
-            } catch (error) {
-                alert('Hiba: ' + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = '📝 Versszak Generálás';
-            }
-        });
+
+                try {
+                    const response = await fetch('/.netlify/functions/gemini', {
+                        method: 'POST',
+                        body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        const newVerse = data.message.trim();
+                        const start = interactiveEditor.selectionStart;
+                        const end = interactiveEditor.selectionEnd;
+                        const text = interactiveEditor.value;
+
+                        const before = text.substring(0, start);
+                        const after = text.substring(end);
+                        interactiveEditor.value = before + '\n\n' + newVerse + '\n\n' + after;
+                        updateInteractivePreview();
+                    } else {
+                        alert('Hiba: ' + (data.error || 'Ismeretlen hiba'));
+                    }
+                } catch (error) {
+                    alert('Hiba: ' + error.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = '📝 Versszak Generálás';
+                }
+            });
         }
 
         // Sor generálás
         const generateLineBtn = document.getElementById('generate-line-btn');
         if (generateLineBtn) {
-        generateLineBtn.addEventListener('click', async function() {
-            const currentText = interactiveEditor.value.trim();
-            const btn = this;
+            generateLineBtn.addEventListener('click', async function() {
+                const currentText = interactiveEditor.value.trim();
+                const btn = this;
 
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading"></span> Generálás...';
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading"></span> Generálás...';
 
-            let prompt = '';
-            if (currentText) {
-                prompt = `Írj egy új sort ehhez a dalszöveghez. A sor stílusa és témája illeszkedjen a meglévő szöveghez. Csak egy sort írj.\n\nMeglévő szöveg:\n${currentText}\n\nCsak az új sort írd, semmi mást.`;
-            } else {
-                prompt = `Írj egy költői dalsort. Legyen rövid, tömör és kifejező. Csak egy sort írj, semmi mást.`;
-            }
-
-            try {
-                const response = await fetch('/.netlify/functions/gemini', {
-                    method: 'POST',
-                    body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    const newLine = data.message.trim().split('\n')[0];
-                    const start = interactiveEditor.selectionStart;
-                    const end = interactiveEditor.selectionEnd;
-                    const text = interactiveEditor.value;
-
-                    const before = text.substring(0, start);
-                    const after = text.substring(end);
-                    interactiveEditor.value = before + '\n' + newLine + '\n' + after;
-                    updateInteractivePreview();
+                let prompt = '';
+                if (currentText) {
+                    prompt = `Írj egy új sort ehhez a dalszöveghez. A sor stílusa és témája illeszkedjen a meglévő szöveghez. Csak egy sort írj.\n\nMeglévő szöveg:\n${currentText}\n\nCsak az új sort írd, semmi mást.`;
                 } else {
-                    alert('Hiba: ' + (data.error || 'Ismeretlen hiba'));
+                    prompt = `Írj egy költői dalsort. Legyen rövid, tömör és kifejező. Csak egy sort írj, semmi mást.`;
                 }
-            } catch (error) {
-                alert('Hiba: ' + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = '✍️ Sor Generálás';
-            }
-        });
+
+                try {
+                    const response = await fetch('/.netlify/functions/gemini', {
+                        method: 'POST',
+                        body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        const newLine = data.message.trim().split('\n')[0];
+                        const start = interactiveEditor.selectionStart;
+                        const end = interactiveEditor.selectionEnd;
+                        const text = interactiveEditor.value;
+
+                        const before = text.substring(0, start);
+                        const after = text.substring(end);
+                        interactiveEditor.value = before + '\n' + newLine + '\n' + after;
+                        updateInteractivePreview();
+                    } else {
+                        alert('Hiba: ' + (data.error || 'Ismeretlen hiba'));
+                    }
+                } catch (error) {
+                    alert('Hiba: ' + error.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = '✍️ Sor Generálás';
+                }
+            });
         }
 
         // Szó variáció generálás
         const generateWordBtn = document.getElementById('generate-word-btn');
         if (generateWordBtn) {
-        generateWordBtn.addEventListener('click', async function() {
-            const start = interactiveEditor.selectionStart;
-            const end = interactiveEditor.selectionEnd;
-            const selectedText = interactiveEditor.value.substring(start, end).trim();
+            generateWordBtn.addEventListener('click', async function() {
+                const start = interactiveEditor.selectionStart;
+                const end = interactiveEditor.selectionEnd;
+                const selectedText = interactiveEditor.value.substring(start, end).trim();
 
-            if (!selectedText) {
-                alert('Kérlek, jelölj ki egy szót vagy kifejezést!');
-                return;
-            }
-
-            const btn = this;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading"></span> Generálás...';
-
-            const prompt = `Add meg 5 alternatív szót vagy kifejezést erre: "${selectedText}". A kontextus dalszöveg írás. Adj csak egyszerű szavakat, vesszővel elválasztva, semmi mást.`;
-
-            try {
-                const response = await fetch('/.netlify/functions/gemini', {
-                    method: 'POST',
-                    body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    const alternatives = data.message.trim();
-                    const message = `Eredeti: "${selectedText}"\n\nAlternatívák:\n${alternatives}\n\nVálassz egyet és cseréld le manuálisan!`;
-                    alert(message);
-                } else {
-                    alert('Hiba: ' + (data.error || 'Ismeretlen hiba'));
+                if (!selectedText) {
+                    alert('Kérlek, jelölj ki egy szót vagy kifejezést!');
+                    return;
                 }
-            } catch (error) {
-                alert('Hiba: ' + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = '🔤 Szó Variáció';
-            }
-        });
+
+                const btn = this;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading"></span> Generálás...';
+
+                const prompt = `Add meg 5 alternatív szót vagy kifejezést erre: "${selectedText}". A kontextus dalszöveg írás. Adj csak egyszerű szavakat, vesszővel elválasztva, semmi mást.`;
+
+                try {
+                    const response = await fetch('/.netlify/functions/gemini', {
+                        method: 'POST',
+                        body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        const alternatives = data.message.trim();
+                        const message = `Eredeti: "${selectedText}"\n\nAlternatívák:\n${alternatives}\n\nVálassz egyet és cseréld le manuálisan!`;
+                        alert(message);
+                    } else {
+                        alert('Hiba: ' + (data.error || 'Ismeretlen hiba'));
+                    }
+                } catch (error) {
+                    alert('Hiba: ' + error.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = '🔤 Szó Variáció';
+                }
+            });
         }
 
         // Kijelölt rész finomítása
         const refineSelectionBtn = document.getElementById('refine-selection-btn');
         if (refineSelectionBtn) {
-        refineSelectionBtn.addEventListener('click', async function() {
-            const start = interactiveEditor.selectionStart;
-            const end = interactiveEditor.selectionEnd;
-            const selectedText = interactiveEditor.value.substring(start, end).trim();
+            refineSelectionBtn.addEventListener('click', async function() {
+                const start = interactiveEditor.selectionStart;
+                const end = interactiveEditor.selectionEnd;
+                const selectedText = interactiveEditor.value.substring(start, end).trim();
 
-            if (!selectedText) {
-                alert('Kérlek, jelölj ki egy szövegrészt amit finomítani szeretnél!');
-                return;
-            }
-
-            const fullText = interactiveEditor.value;
-            const btn = this;
-
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading"></span> Finomítás...';
-
-            const prompt = `Finomítsd és javítsd ezt a dalszöveg részt. Tedd költőibbé, érzelmesebben és kifejezőbbé, de tartsd meg az eredeti jelentést és hosszt.\n\nTeljes kontextus:\n${fullText}\n\nFinomítandó rész:\n"${selectedText}"\n\nCsak a finomított részt írd, semmi mást.`;
-
-            try {
-                const response = await fetch('/.netlify/functions/gemini', {
-                    method: 'POST',
-                    body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    const refinedText = data.message.trim();
-
-                    // Cseréljük le a kijelölt részt
-                    const before = interactiveEditor.value.substring(0, start);
-                    const after = interactiveEditor.value.substring(end);
-                    interactiveEditor.value = before + refinedText + after;
-
-                    // Jelöljük ki az új szöveget
-                    interactiveEditor.setSelectionRange(start, start + refinedText.length);
-                    interactiveEditor.focus();
-                    updateInteractivePreview();
-                } else {
-                    alert('Hiba: ' + (data.error || 'Ismeretlen hiba'));
+                if (!selectedText) {
+                    alert('Kérlek, jelölj ki egy szövegrészt amit finomítani szeretnél!');
+                    return;
                 }
-            } catch (error) {
-                alert('Hiba: ' + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = '✨ Kijelölt Rész Finomítása';
-            }
-        });
+
+                const fullText = interactiveEditor.value;
+                const btn = this;
+
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading"></span> Finomítás...';
+
+                const prompt = `Finomítsd és javítsd ezt a dalszöveg részt. Tedd költőibbé, érzelmesebben és kifejezőbbé, de tartsd meg az eredeti jelentést és hosszt.\n\nTeljes kontextus:\n${fullText}\n\nFinomítandó rész:\n"${selectedText}"\n\nCsak a finomított részt írd, semmi mást.`;
+
+                try {
+                    const response = await fetch('/.netlify/functions/gemini', {
+                        method: 'POST',
+                        body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        const refinedText = data.message.trim();
+
+                        // Cseréljük le a kijelölt részt
+                        const before = interactiveEditor.value.substring(0, start);
+                        const after = interactiveEditor.value.substring(end);
+                        interactiveEditor.value = before + refinedText + after;
+
+                        // Jelöljük ki az új szöveget
+                        interactiveEditor.setSelectionRange(start, start + refinedText.length);
+                        interactiveEditor.focus();
+                        updateInteractivePreview();
+                    } else {
+                        alert('Hiba: ' + (data.error || 'Ismeretlen hiba'));
+                    }
+                } catch (error) {
+                    alert('Hiba: ' + error.message);
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = '✨ Kijelölt Rész Finomítása';
+                }
+            });
         }
 
         // Zenei címkék beszúrása
@@ -1946,67 +1946,67 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
         // Szöveg másolása
         const copyInteractiveBtn = document.getElementById('copy-interactive-btn');
         if (copyInteractiveBtn) {
-        copyInteractiveBtn.addEventListener('click', function() {
-            const text = interactiveEditor.value;
+            copyInteractiveBtn.addEventListener('click', function() {
+                const text = interactiveEditor.value;
 
-            if (!text) {
-                alert('Nincs mit másolni!');
-                return;
-            }
+                if (!text) {
+                    alert('Nincs mit másolni!');
+                    return;
+                }
 
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = this;
-                const originalText = btn.textContent;
-                btn.textContent = '✅ Másolva!';
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                }, 2000);
-            }).catch(err => {
-                alert('Másolás sikertelen!');
+                navigator.clipboard.writeText(text).then(() => {
+                    const btn = this;
+                    const originalText = btn.textContent;
+                    btn.textContent = '✅ Másolva!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    alert('Másolás sikertelen!');
+                });
             });
-        });
         }
 
         // Szöveg törlése
         const clearInteractiveBtn = document.getElementById('clear-interactive-btn');
         if (clearInteractiveBtn) {
-        clearInteractiveBtn.addEventListener('click', function() {
-            if (confirm('Biztosan törölni szeretnéd a teljes szöveget?')) {
-                interactiveEditor.value = '';
-                updateInteractivePreview();
-            }
-        });
+            clearInteractiveBtn.addEventListener('click', function() {
+                if (confirm('Biztosan törölni szeretnéd a teljes szöveget?')) {
+                    interactiveEditor.value = '';
+                    updateInteractivePreview();
+                }
+            });
         }
 
         // Preview mentése
         const savePreviewBtn = document.getElementById('save-preview-btn');
         if (savePreviewBtn) {
-        savePreviewBtn.addEventListener('click', function() {
-            const text = interactiveEditor.value.trim();
+            savePreviewBtn.addEventListener('click', function() {
+                const text = interactiveEditor.value.trim();
 
-            if (!text) {
-                alert('Nincs mit menteni! A szövegszerkesztő üres.');
-                return;
-            }
+                if (!text) {
+                    alert('Nincs mit menteni! A szövegszerkesztő üres.');
+                    return;
+                }
 
-            const title = prompt('Add meg a dalszöveg címét:', 'Interaktív dalszöveg');
-            if (!title) return;
+                const title = prompt('Add meg a dalszöveg címét:', 'Interaktív dalszöveg');
+                if (!title) return;
 
-            const savedLyrics = JSON.parse(localStorage.getItem('savedLyrics') || '[]');
+                const savedLyrics = JSON.parse(localStorage.getItem('savedLyrics') || '[]');
 
-            const newLyric = {
-                id: Date.now(),
-                title: title,
-                lyrics: text,
-                date: new Date().toISOString()
-            };
+                const newLyric = {
+                    id: Date.now(),
+                    title: title,
+                    lyrics: text,
+                    date: new Date().toISOString()
+                };
 
-            savedLyrics.unshift(newLyric);
-            localStorage.setItem('savedLyrics', JSON.stringify(savedLyrics));
+                savedLyrics.unshift(newLyric);
+                localStorage.setItem('savedLyrics', JSON.stringify(savedLyrics));
 
-            alert('✅ Dalszöveg elmentve!');
-            loadSavedLyrics();
-        });
+                alert('✅ Dalszöveg elmentve!');
+                loadSavedLyrics();
+            });
         }
 
         // Chat Enter gomb támogatás
