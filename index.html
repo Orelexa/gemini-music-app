@@ -1658,63 +1658,6 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
         });
 
         // ==========================================
-        // INTERAKTÍV SZERKESZTŐ
-        // ==========================================
-
-        // AI Generálás az Interaktív Szerkesztőben
-        document.getElementById('ai-generate-btn').addEventListener('click', async function() {
-            const textEditor = document.getElementById('text-editor').value.trim();
-            const aiPrompt = document.getElementById('ai-prompt').value.trim();
-            const statusDiv = document.getElementById('ai-status');
-            const editedText = document.getElementById('edited-text');
-
-            if (!textEditor) {
-                alert('Kérlek, írj vagy illeszd be a szöveget a Szöveg Szerkesztőbe!');
-                return;
-            }
-
-            if (!aiPrompt) {
-                alert('Kérlek, add meg az AI utasítást!');
-                return;
-            }
-
-            const btn = this;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading"></span> Generálás...';
-            statusDiv.textContent = 'AI feldolgozás folyamatban...';
-            editedText.value = '';
-
-            try {
-                const fullPrompt = `${aiPrompt}\n\nSzöveg:\n${textEditor}`;
-
-                const response = await fetch('/.netlify/functions/gemini', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        prompt: fullPrompt,
-                        mode: 'text-edit'
-                    }),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.message) {
-                    editedText.value = data.message.trim();
-                    statusDiv.textContent = '✅ Sikeres generálás!';
-                } else {
-                    statusDiv.textContent = '❌ Hiba: ' + (data.error || 'Ismeretlen hiba');
-                }
-            } catch (error) {
-                statusDiv.textContent = '❌ Hiba: ' + error.message;
-            } finally {
-                btn.disabled = false;
-                btn.textContent = '✨ Generálás';
-            }
-        });
-
-        // ==========================================
         // INTERAKTÍV SZERKESZTŐ FUNKCIÓK
         // ==========================================
 
