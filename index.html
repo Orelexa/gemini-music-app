@@ -1728,10 +1728,12 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
 
         // Versszak generálás
         const generateVerseBtn = document.getElementById('generate-verse-btn');
+        console.log('generateVerseBtn:', generateVerseBtn);
         if (generateVerseBtn) {
-        generateVerseBtn.addEventListener('click', async function() {
-            const currentText = interactiveEditor.value.trim();
-            const btn = this;
+            generateVerseBtn.addEventListener('click', async function() {
+                console.log('Versszak gomb megnyomva!');
+                const currentText = interactiveEditor.value.trim();
+                const btn = this;
 
             btn.disabled = true;
             btn.innerHTML = '<span class="loading"></span> Generálás...';
