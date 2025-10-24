@@ -373,12 +373,43 @@
             display: block;
         }
 
+        /* Interaktív Szerkesztő stílusok */
+        .interactive-editor-grid {
+            display: grid;
+            grid-template-columns: 40% 20% 40%;
+            gap: 20px;
+        }
+
+        .editor-card {
+            background: lightblue;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            min-height: 400px;
+        }
+
+        .editor-card h3 {
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .editor-card textarea {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1a1a2e;
+            border: 2px solid rgba(26, 26, 46, 0.2);
+            min-height: 300px;
+        }
+
         @media (max-width: 1200px) {
             .main-content {
                 grid-template-columns: 1fr;
             }
             .section.two-thirds {
                 grid-column: span 1;
+            }
+            .interactive-editor-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -524,6 +555,43 @@
                         🎹 Akkord Progresszió Kérése
                     </button>
                     <div class="output-box" id="chords-output">Kérj akkord progresszió ajánlást a dalszövegedhez!</div>
+                </div>
+            </div>
+
+            <!-- Interaktív Szerkesztő -->
+            <div class="section full-width">
+                <h2 class="section-title">✏️ Interaktív Szerkesztő</h2>
+
+                <div class="interactive-editor-grid">
+                    <!-- Szöveg Szerkesztő (40%) -->
+                    <div class="editor-card">
+                        <h3>📝 Szöveg Szerkesztő</h3>
+                        <textarea id="text-editor" placeholder="Írj vagy illeszz be szöveget ide a szerkesztéshez..."></textarea>
+                    </div>
+
+                    <!-- AI Generálás (20%) -->
+                    <div class="editor-card">
+                        <h3>🤖 AI Generálás</h3>
+                        <div class="form-group">
+                            <label for="ai-prompt">AI Prompt:</label>
+                            <textarea id="ai-prompt" placeholder="Add meg az AI utasítást..." rows="3"></textarea>
+                        </div>
+                        <button class="btn" id="ai-generate-btn" style="width: 100%; margin-top: 10px;">
+                            ✨ Generálás
+                        </button>
+                        <div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.8); border-radius: 8px; min-height: 100px; color: #1a1a2e; font-size: 14px;" id="ai-status">
+                            Kattints a Generálás gombra
+                        </div>
+                    </div>
+
+                    <!-- Szerkesztett Szöveg (40%) -->
+                    <div class="editor-card">
+                        <h3>📋 Szerkesztett Szöveg</h3>
+                        <textarea id="edited-text" placeholder="A szerkesztett szöveg itt jelenik meg..." readonly></textarea>
+                        <button class="btn secondary" id="copy-edited-btn" style="width: 100%; margin-top: 10px;">
+                            📋 Másolás
+                        </button>
+                    </div>
                 </div>
             </div>
             <!-- Suno Prompt -->
@@ -1477,6 +1545,84 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
         // Másolás gomb
         document.getElementById('copy-suno-btn').addEventListener('click', function() {
             const text = document.getElementById('suno-result').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = this;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Másolva!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                alert('Másolás sikertelen! Kérlek, másold ki manuálisan.');
+            });
+        });
+
+        // ==========================================
+        // INTERAKTÍV SZERKESZTŐ
+        // ==========================================
+
+        // AI Generálás az Interaktív Szerkesztőben
+        document.getElementById('ai-generate-btn').addEventListener('click', async function() {
+            const textEditor = document.getElementById('text-editor').value.trim();
+            const aiPrompt = document.getElementById('ai-prompt').value.trim();
+            const statusDiv = document.getElementById('ai-status');
+            const editedText = document.getElementById('edited-text');
+
+            if (!textEditor) {
+                alert('Kérlek, írj vagy illeszd be a szöveget a Szöveg Szerkesztőbe!');
+                return;
+            }
+
+            if (!aiPrompt) {
+                alert('Kérlek, add meg az AI utasítást!');
+                return;
+            }
+
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Generálás...';
+            statusDiv.textContent = 'AI feldolgozás folyamatban...';
+            editedText.value = '';
+
+            try {
+                const fullPrompt = `${aiPrompt}\n\nSzöveg:\n${textEditor}`;
+
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        prompt: fullPrompt,
+                        mode: 'text-edit'
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.message) {
+                    editedText.value = data.message.trim();
+                    statusDiv.textContent = '✅ Sikeres generálás!';
+                } else {
+                    statusDiv.textContent = '❌ Hiba: ' + (data.error || 'Ismeretlen hiba');
+                }
+            } catch (error) {
+                statusDiv.textContent = '❌ Hiba: ' + error.message;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '✨ Generálás';
+            }
+        });
+
+        // Szerkesztett szöveg másolása
+        document.getElementById('copy-edited-btn').addEventListener('click', function() {
+            const text = document.getElementById('edited-text').value;
+
+            if (!text) {
+                alert('Nincs mit másolni!');
+                return;
+            }
+
             navigator.clipboard.writeText(text).then(() => {
                 const btn = this;
                 const originalText = btn.textContent;
