@@ -382,20 +382,30 @@
     /* Fixed width ratios 40-20-40 */
 }
 
-        #interactive-content .editor-card-left {
-         flex: 2;
-         min-width: 0;
-     }
+   .editor-card-left,
+.editor-card-center,
+.editor-card-right {
+    box-sizing: border-box;
+    min-width: 0;
+}
 
-     #interactive-content .editor-card-center {
-         flex: 1;
-         min-width: 0;
-     }
+.editor-card-left {
+    flex-basis: 40%;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
 
-     #interactive-content .editor-card-right {
-         flex: 2;
-         min-width: 0;
-     }
+.editor-card-center {
+    flex-basis: 20%;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.editor-card-right {
+    flex-basis: 40%;
+    flex-grow: 0;
+    flex-shrink: 0;
+}     
 
         @media (max-width: 1200px) {
     .main-content {
