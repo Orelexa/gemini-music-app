@@ -1721,17 +1721,6 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
         const interactiveEditor = document.getElementById('interactive-editor');
         const interactivePreview = document.getElementById('interactive-preview');
 
-        // Live preview frissítése
-        function updateInteractivePreview() {
-            const content = interactiveEditor.value.trim();
-            if (content) {
-                interactivePreview.textContent = content;
-                interactivePreview.style.color = '#e0e0e0';
-            } else {
-                interactivePreview.innerHTML = '<span style="color: #9e9e9e; font-style: italic;">A szerkesztett szöveg itt fog megjelenni...</span>';
-            }
-        }
-
         // Auto-update preview amikor gépelsz
         if (interactiveEditor) {
             interactiveEditor.addEventListener('input', updateInteractivePreview);
