@@ -590,33 +590,68 @@
             <!-- Interaktív Szerkesztő -->
             <div class="tab-content" id="interactive-content">
                 <div class="interactive-editor-grid">
-                    <!-- Szöveg Szerkesztő (40%) -->
+                    <!-- 1. Kártya: Szöveg Szerkesztő - 40% -->
                     <div class="editor-card editor-card-left">
-                        <h3>📝 Szöveg Szerkesztő</h3>
-                        <textarea id="text-editor" placeholder="Írj vagy illeszz be szöveget ide a szerkesztéshez..."></textarea>
+                        <h3>✏️ Szöveg Szerkesztő</h3>
+                        <textarea id="interactive-editor"
+                                  placeholder="Illeszd be vagy írd ide a szövegedet... Jelölj ki bármilyen részt és használd az AI eszközöket a finomításhoz!"
+                                  style="width: 100%; min-height: 600px; font-size: 15px; line-height: 1.8; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; resize: vertical;"></textarea>
+                        <div style="margin-top: 10px; padding: 10px; background: rgba(50, 50, 50, 0.5); border-radius: 8px;">
+                            <p style="font-size: 11px; color: #9e9e9e; margin: 0;">
+                                <strong>💡 Tipp:</strong> Jelöld ki a szöveget amit módosítani szeretnél, majd használd az AI eszközöket!
+                            </p>
+                        </div>
                     </div>
 
-                    <!-- AI Generálás (20%) -->
+                    <!-- 2. Kártya: AI Eszközök - 20% -->
                     <div class="editor-card editor-card-center">
                         <h3>🤖 AI Generálás</h3>
-                        <div class="form-group">
-                            <label for="ai-prompt">AI Prompt:</label>
-                            <textarea id="ai-prompt" placeholder="Add meg az AI utasítást..." rows="3"></textarea>
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px;">
+                            <button class="btn" id="generate-verse-btn">📝 Versszak Generálás</button>
+                            <button class="btn" id="generate-line-btn">✍️ Sor Generálás</button>
+                            <button class="btn" id="generate-word-btn">🔤 Szó Variáció</button>
+                            <button class="btn secondary" id="refine-selection-btn">✨ Kijelölt Rész Finomítása</button>
                         </div>
-                        <button class="btn" id="ai-generate-btn" style="width: 100%; margin-top: 10px;">
-                            ✨ Generálás
-                        </button>
-                        <div style="margin-top: 15px; padding: 10px; background: rgba(20, 20, 20, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; min-height: 100px; color: #e0e0e0; font-size: 14px;" id="ai-status">
-                            Kattints a Generálás gombra
+
+                        <h3>🎵 Zenei Címkék</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 25px;">
+                            <button class="btn secondary tag-btn" data-tag="[Intro]">Intro</button>
+                            <button class="btn secondary tag-btn" data-tag="[Verse]">Verse</button>
+                            <button class="btn secondary tag-btn" data-tag="[Pre-Chorus]">Pre-Chorus</button>
+                            <button class="btn secondary tag-btn" data-tag="[Chorus]">Chorus</button>
+                            <button class="btn secondary tag-btn" data-tag="[Bridge]">Bridge</button>
+                            <button class="btn secondary tag-btn" data-tag="[Outro]">Outro</button>
+                            <button class="btn secondary tag-btn" data-tag="[Solo]">Solo</button>
+                            <button class="btn secondary tag-btn" data-tag="[Break]">Break</button>
+                        </div>
+
+                        <h3>⚡ Gyors Műveletek</h3>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <button class="btn secondary" id="copy-interactive-btn">📋 Szöveg Másolása</button>
+                            <button class="btn danger" id="clear-interactive-btn">🗑️ Szöveg Törlése</button>
                         </div>
                     </div>
 
-                    <!-- Szerkesztett Szöveg (40%) -->
+                    <!-- 3. Kártya: Szerkesztett Szöveg Preview - 40% -->
                     <div class="editor-card editor-card-right">
-                        <h3>📋 Szerkesztett Szöveg</h3>
-                        <textarea id="edited-text" placeholder="A szerkesztett szöveg itt jelenik meg..." readonly></textarea>
-                        <button class="btn secondary" id="copy-edited-btn" style="width: 100%; margin-top: 10px;">
-                            📋 Másolás
+                        <h3>📄 Szerkesztett Szöveg</h3>
+                        <div id="interactive-preview"
+                             style="background: rgba(20, 20, 20, 0.8);
+                                    border: 2px solid rgba(255, 255, 255, 0.1);
+                                    border-radius: 10px;
+                                    padding: 20px;
+                                    min-height: 600px;
+                                    max-height: 600px;
+                                    overflow-y: auto;
+                                    white-space: pre-wrap;
+                                    font-family: 'Courier New', monospace;
+                                    font-size: 15px;
+                                    line-height: 1.8;
+                                    color: #e0e0e0;">
+                            <span style="color: #9e9e9e; font-style: italic;">A szerkesztett szöveg itt fog megjelenni...</span>
+                        </div>
+                        <button class="btn" id="save-preview-btn" style="width: 100%; margin-top: 15px;">
+                            💾 Mentés a Mentett Dalszövegekbe
                         </button>
                     </div>
                 </div>
