@@ -373,32 +373,53 @@
             display: block;
         }
 
-        /* Interaktív Szerkesztő stílusok */
+        /* Interaktív Szerkesztő flexbox layout */
         .interactive-editor-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 2fr;
+            display: flex;
+            flex-direction: row;
             gap: 20px;
+            width: 100%;
+        }
+
+        .editor-card-left {
+            flex: 2;
+            min-width: 0;
+        }
+
+        .editor-card-center {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .editor-card-right {
+            flex: 2;
+            min-width: 0;
         }
 
         .editor-card {
-            background: lightblue;
+            background: rgba(40, 40, 40, 0.8);
             padding: 20px;
             border-radius: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             min-height: 400px;
         }
 
         .editor-card h3 {
-            color: #1a1a2e;
+            color: #bb86fc;
             margin-bottom: 15px;
             font-size: 1.2rem;
         }
 
         .editor-card textarea {
-            background: rgba(255, 255, 255, 0.9);
-            color: #1a1a2e;
-            border: 2px solid rgba(26, 26, 46, 0.2);
+            background: rgba(20, 20, 20, 0.8);
+            color: #e0e0e0;
+            border: 2px solid rgba(255, 255, 255, 0.1);
             min-height: 300px;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            line-height: 1.6;
         }
 
         @media (max-width: 1200px) {
@@ -408,8 +429,15 @@
             .section.two-thirds {
                 grid-column: span 1;
             }
+            /* Interaktív Szerkesztő responsive */
             .interactive-editor-grid {
-                grid-template-columns: 1fr;
+                flex-direction: column;
+            }
+            .editor-card-left,
+            .editor-card-center,
+            .editor-card-right {
+                flex: 1;
+                width: 100%;
             }
         }
     </style>
@@ -564,13 +592,13 @@
 
                 <div class="interactive-editor-grid">
                     <!-- Szöveg Szerkesztő (40%) -->
-                    <div class="editor-card">
+                    <div class="editor-card editor-card-left">
                         <h3>📝 Szöveg Szerkesztő</h3>
                         <textarea id="text-editor" placeholder="Írj vagy illeszz be szöveget ide a szerkesztéshez..."></textarea>
                     </div>
 
                     <!-- AI Generálás (20%) -->
-                    <div class="editor-card">
+                    <div class="editor-card editor-card-center">
                         <h3>🤖 AI Generálás</h3>
                         <div class="form-group">
                             <label for="ai-prompt">AI Prompt:</label>
@@ -579,13 +607,13 @@
                         <button class="btn" id="ai-generate-btn" style="width: 100%; margin-top: 10px;">
                             ✨ Generálás
                         </button>
-                        <div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.8); border-radius: 8px; min-height: 100px; color: #1a1a2e; font-size: 14px;" id="ai-status">
+                        <div style="margin-top: 15px; padding: 10px; background: rgba(20, 20, 20, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; min-height: 100px; color: #e0e0e0; font-size: 14px;" id="ai-status">
                             Kattints a Generálás gombra
                         </div>
                     </div>
 
                     <!-- Szerkesztett Szöveg (40%) -->
-                    <div class="editor-card">
+                    <div class="editor-card editor-card-right">
                         <h3>📋 Szerkesztett Szöveg</h3>
                         <textarea id="edited-text" placeholder="A szerkesztett szöveg itt jelenik meg..." readonly></textarea>
                         <button class="btn secondary" id="copy-edited-btn" style="width: 100%; margin-top: 10px;">
