@@ -1,8 +1,8 @@
 diff --git a/index.html b/index.html
-index fcff55027dd41da7ab238ec1badebd569e7b362c..7cc769cf379cd4eb36b7e7c9f1a913711c88e2a0 100644
+index fcff55027dd41da7ab238ec1badebd569e7b362c..dde429908fd3eebdfbb2d32681840a2896dde4a3 100644
 --- a/index.html
 +++ b/index.html
-@@ -27,68 +27,103 @@
+@@ -27,70 +27,81 @@
              border-radius: 20px;
              padding: 30px;
              box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
@@ -28,18 +28,23 @@ index fcff55027dd41da7ab238ec1badebd569e7b362c..7cc769cf379cd4eb36b7e7c9f1a91371
          }
  
          .main-content {
--            display: grid;
--            grid-template-columns: 1fr 1fr 1fr;
 +            display: flex;
 +            flex-direction: column;
 +            gap: 20px;
 +        }
 +
-+        .primary-panels,
-+        .secondary-panels {
-+            display: flex;
++        .primary-panels {
+             display: grid;
+-            grid-template-columns: 1fr 1fr 1fr;
++            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2fr);
              gap: 20px;
-+            flex-wrap: wrap;
++            align-items: stretch;
++        }
++
++        .secondary-panels {
++            display: grid;
++            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
++            gap: 20px;
 +            align-items: stretch;
          }
  
@@ -48,46 +53,17 @@ index fcff55027dd41da7ab238ec1badebd569e7b362c..7cc769cf379cd4eb36b7e7c9f1a91371
              padding: 25px;
              border-radius: 15px;
              border: 1px solid rgba(255, 255, 255, 0.1);
++            min-width: 0;
          }
  
-+        .main-content > .section {
-+            width: 100%;
-+        }
-+
-+        .primary-panels .section,
-+        .secondary-panels .section {
-+            --panel-ratio: 1;
-+            flex: var(--panel-ratio) 1 0;
-+            flex-basis: calc(var(--panel-ratio) * 10%);
-+            max-width: calc(var(--panel-ratio) * 10%);
-+        }
-+
-+        .section-editor,
-+        .section-edited {
-+            --panel-ratio: 4;
-+        }
-+
-+        .section-ai {
-+            --panel-ratio: 2;
-+        }
-+
          .section.full-width {
--            grid-column: 1 / -1;
-+            --panel-ratio: 10;
-+            flex-basis: 100%;
-+            max-width: 100%;
-+        }
-+
-+        .section-saved {
-+            --panel-ratio: 4;
+             grid-column: 1 / -1;
          }
  
 -        .section.two-thirds {
 -            grid-column: span 2;
-+        .section-chat {
-+            --panel-ratio: 6;
-         }
- 
+-        }
+-
          .section-title {
              color: #bb86fc;
              font-size: 1.3rem;
@@ -111,7 +87,9 @@ index fcff55027dd41da7ab238ec1badebd569e7b362c..7cc769cf379cd4eb36b7e7c9f1a91371
          input, select, textarea {
              width: 100%;
              padding: 12px 15px;
-@@ -139,50 +174,67 @@
+             border: 2px solid rgba(255, 255, 255, 0.1);
+             border-radius: 10px;
+@@ -139,50 +150,67 @@
          .btn:active {
              transform: translateY(0);
          }
@@ -179,7 +157,7 @@ index fcff55027dd41da7ab238ec1badebd569e7b362c..7cc769cf379cd4eb36b7e7c9f1a91371
          }
  
          .image-container {
-@@ -352,146 +404,158 @@
+@@ -352,146 +380,164 @@
  
          .tab {
              padding: 10px 20px;
@@ -206,19 +184,24 @@ index fcff55027dd41da7ab238ec1badebd569e7b362c..7cc769cf379cd4eb36b7e7c9f1a91371
  
          @media (max-width: 1200px) {
 -            .main-content {
--                grid-template-columns: 1fr;
-+            .primary-panels,
-+            .secondary-panels {
-+                flex-direction: column;
++            .primary-panels {
+                 grid-template-columns: 1fr;
              }
 -            .section.two-thirds {
 -                grid-column: span 1;
 +
-+            .primary-panels .section,
-+            .secondary-panels .section {
-+                flex: 1 1 100%;
-+                flex-basis: 100%;
-+                max-width: 100%;
++            .secondary-panels {
++                grid-template-columns: 1fr;
++            }
++        }
++
++        @media (max-width: 768px) {
++            .container {
++                padding: 20px;
++            }
++
++            .section {
++                padding: 20px;
              }
          }
      </style>
@@ -403,7 +386,7 @@ index fcff55027dd41da7ab238ec1badebd569e7b362c..7cc769cf379cd4eb36b7e7c9f1a91371
                                  <span>A borítókép itt fog megjelenni...</span>
                                  <div class="image-actions" style="display:none;" id="image-actions">
                                      <button class="icon-btn" id="regenerate-image-btn" title="Újragenerálás">🔄</button>
-@@ -552,72 +616,74 @@
+@@ -552,72 +598,74 @@
              <textarea id="suno-melody" rows="3" placeholder="A dallam ötletek automatikusan ide kerülnek..." readonly style="background: #2a2a2a;"></textarea>
          </div>
  
