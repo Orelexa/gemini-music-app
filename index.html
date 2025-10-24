@@ -49,9 +49,39 @@
         }
 
         .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 20px;
+        }
+
+        .primary-panels {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+            flex-wrap: nowrap;
+            width: 100%;
+        }
+
+        .primary-panels .section {
+            min-width: 0;
+        }
+
+        .section-editor,
+        .section-edited {
+            flex: 0 1 calc((100% - 40px) * 0.4);
+            max-width: calc((100% - 40px) * 0.4);
+        }
+
+        .section-ai {
+            flex: 0 1 calc((100% - 40px) * 0.2);
+            max-width: calc((100% - 40px) * 0.2);
+        }
+
+        .secondary-panels {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 20px;
+            align-items: stretch;
         }
 
         .section {
@@ -59,14 +89,11 @@
             padding: 25px;
             border-radius: 15px;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 0;
         }
 
         .section.full-width {
             grid-column: 1 / -1;
-        }
-
-        .section.two-thirds {
-            grid-column: span 2;
         }
 
         .section-title {
@@ -159,6 +186,23 @@
             gap: 10px;
             flex-wrap: wrap;
             margin-top: 15px;
+        }
+
+        .ai-generation .btn-group {
+            flex-direction: column;
+            flex-wrap: nowrap;
+            align-items: stretch;
+        }
+
+        .ai-generation .btn-group .btn {
+            width: 100%;
+        }
+
+        .section-description {
+            color: #b0b0b0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
         }
 
         .output-box {
@@ -374,11 +418,30 @@
         }
 
         @media (max-width: 1200px) {
-            .main-content {
+            .primary-panels {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .section-editor,
+            .section-ai,
+            .section-edited {
+                flex: 1 1 auto;
+                max-width: 100%;
+            }
+
+            .secondary-panels {
                 grid-template-columns: 1fr;
             }
-            .section.two-thirds {
-                grid-column: span 1;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .section {
+                padding: 20px;
             }
         }
     </style>
@@ -391,85 +454,92 @@
         </div>
 
         <div class="main-content">
-            <!-- Input szekció -->
-            <div class="section">
-                <h2 class="section-title">⚙️ Dalszöveg Beállítások</h2>
-                
-                <div class="form-group">
-                    <label for="theme">Téma / Mondanivaló</label>
-                    <textarea id="theme" placeholder="pl. elveszett szerelem, szabadság, kaland..."></textarea>
-                </div>
+            <div class="primary-panels">
+                <!-- Szöveg szerkesztő szekció -->
+                <div class="section section-editor">
+                    <h2 class="section-title">📝 Szöveg Szerkesztő</h2>
 
-                <div class="form-group range-group">
-                    <div>
-                        <label for="verses-from">Versszakok (min)</label>
-                        <select id="verses-from">
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3" selected>3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                        </select>
+                    <div class="form-group">
+                        <label for="theme">Téma / Mondanivaló</label>
+                        <textarea id="theme" placeholder="pl. elveszett szerelem, szabadság, kaland..."></textarea>
                     </div>
-                    <div>
-                        <label for="verses-to">Versszakok (max)</label>
-                        <select id="verses-to">
-                            <option value="1">1</option>
+
+                    <div class="form-group range-group">
+                        <div>
+                            <label for="verses-from">Versszakok (min)</label>
+                            <select id="verses-from">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3" selected>3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="verses-to">Versszakok (max)</label>
+                            <select id="verses-to">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4" selected>4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lines-per-verse">Sorok versszakonként</label>
+                        <select id="lines-per-verse">
                             <option value="2">2</option>
-                            <option value="3">3</option>
                             <option value="4" selected>4</option>
-                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="8">8</option>
                         </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="max-syllables">Max szótagszám / sor</label>
+                        <input type="number" id="max-syllables" value="10" min="6" max="15">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rhyme-pattern">Rímképlet</label>
+                        <select id="rhyme-pattern">
+                            <option value="AABB">AABB (párrímes)</option>
+                            <option value="ABAB" selected>ABAB (keresztrímes)</option>
+                            <option value="ABCB">ABCB (félrímes)</option>
+                            <option value="AAAA">AAAA (folyamatos)</option>
+                        </select>
+                    </div>
+
+                    <button class="btn" id="generate-btn" style="width: 100%;">
+                        🎼 Dalszöveg Generálása
+                    </button>
+                </div>
+
+                <!-- AI generálás műveletek -->
+                <div class="section section-ai ai-generation">
+                    <h2 class="section-title">🤖 AI Generálás</h2>
+                    <p class="section-description">Válassz egy műveletet a generált szöveg finomhangolásához vagy megosztásához.</p>
+                    <div class="btn-group">
+                        <button class="btn secondary" id="regenerate-btn" style="display:none;">🔄 Kijelölt Rész Újragenerálása</button>
+                        <button class="btn secondary" id="copy-lyrics-btn" style="display:none;">📋 Másolás</button>
+                        <button class="btn" id="save-lyrics-btn" style="display:none;">💾 Mentés</button>
+                        <button class="btn secondary" id="translate-btn" style="display:none;">🌍 Angol Fordítás</button>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="lines-per-verse">Sorok versszakonként</label>
-                    <select id="lines-per-verse">
-                        <option value="2">2</option>
-                        <option value="4" selected>4</option>
-                        <option value="6">6</option>
-                        <option value="8">8</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="max-syllables">Max szótagszám / sor</label>
-                    <input type="number" id="max-syllables" value="10" min="6" max="15">
-                </div>
-
-                <div class="form-group">
-                    <label for="rhyme-pattern">Rímképlet</label>
-                    <select id="rhyme-pattern">
-                        <option value="AABB">AABB (párrímes)</option>
-                        <option value="ABAB" selected>ABAB (keresztrímes)</option>
-                        <option value="ABCB">ABCB (félrímes)</option>
-                        <option value="AAAA">AAAA (folyamatos)</option>
-                    </select>
-                </div>
-
-                <button class="btn" id="generate-btn" style="width: 100%;">
-                    🎼 Dalszöveg Generálása
-                </button>
-            </div>
-
-            <!-- Output szekció -->
-            <div class="section two-thirds">
-                <h2 class="section-title">📝 Generált Dalszöveg</h2>
-                <textarea class="output-box" id="output" placeholder="A generált dalszöveg itt fog megjelenni..."></textarea>
-                
-                <div class="btn-group">
-                    <button class="btn secondary" id="regenerate-btn" style="display:none;">🔄 Kijelölt Rész Újragenerálása</button>
-                    <button class="btn secondary" id="copy-lyrics-btn" style="display:none;">📋 Másolás</button>
-                    <button class="btn" id="save-lyrics-btn" style="display:none;">💾 Mentés</button>
-                    <button class="btn secondary" id="translate-btn" style="display:none;">🌍 Angol Fordítás</button>
+                <!-- Szerkesztett szöveg kimenet -->
+                <div class="section section-edited">
+                    <h2 class="section-title">✍️ Szerkesztett Szöveg</h2>
+                    <textarea class="output-box" id="output" placeholder="A szerkesztett szöveg itt fog megjelenni..."></textarea>
                 </div>
             </div>
 
             <!-- AI Segédeszközök -->
             <div class="section full-width">
                 <h2 class="section-title">🎹 AI Zenei Segédeszközök</h2>
-                
+
                 <div class="tabs">
                     <button class="tab active" data-tab="cover">🖼️ Borítókép</button>
                     <button class="tab" data-tab="style">🎸 Zenei Stílus</button>
@@ -525,77 +595,80 @@
                     </button>
                     <div class="output-box" id="chords-output">Kérj akkord progresszió ajánlást a dalszövegedhez!</div>
                 </div>
-            </div>
-            <!-- Suno Prompt -->
-<div class="tab-content" id="suno-content">
-    <div style="max-width: 800px; margin: 0 auto;">
-        <div class="info-box" style="margin-bottom: 20px;">
-            <strong>ℹ️ Hogyan működik:</strong>
-            <p>1. Generálj dalszöveget (magyar vagy angol)</p>
-            <p>2. Opcionálisan használd a többi AI eszközt (Zenei Stílus, Dallam, Akkordok)</p>
-            <p>3. Az adatok automatikusan összegyűlnek</p>
-            <p>4. Kattints a gombra → Kész a Suno-kompatibilis prompt!</p>
-        </div>
 
-        <div class="form-group">
-            <label>📝 Dalszöveg (automatikusan töltődik):</label>
-            <textarea id="suno-lyrics" rows="6" placeholder="A generált dalszöveg automatikusan ide kerül..." readonly style="background: #2a2a2a;"></textarea>
-        </div>
+                <!-- Suno Prompt -->
+                <div class="tab-content" id="suno-content">
+                    <div style="max-width: 800px; margin: 0 auto;">
+                        <div class="info-box" style="margin-bottom: 20px;">
+                            <strong>ℹ️ Hogyan működik:</strong>
+                            <p>1. Generálj dalszöveget (magyar vagy angol)</p>
+                            <p>2. Opcionálisan használd a többi AI eszközt (Zenei Stílus, Dallam, Akkordok)</p>
+                            <p>3. Az adatok automatikusan összegyűlnek</p>
+                            <p>4. Kattints a gombra → Kész a Suno-kompatibilis prompt!</p>
+                        </div>
 
-        <div class="form-group">
-            <label>🎸 Zenei stílus (automatikusan töltődik):</label>
-            <textarea id="suno-style" rows="3" placeholder="A zenei stílus ajánlás automatikusan ide kerül..." readonly style="background: #2a2a2a;"></textarea>
-        </div>
+                        <div class="form-group">
+                            <label>📝 Dalszöveg (automatikusan töltődik):</label>
+                            <textarea id="suno-lyrics" rows="6" placeholder="A generált dalszöveg automatikusan ide kerül..." readonly style="background: #2a2a2a;"></textarea>
+                        </div>
 
-        <div class="form-group">
-            <label>🎵 Dallam info (automatikusan töltődik):</label>
-            <textarea id="suno-melody" rows="3" placeholder="A dallam ötletek automatikusan ide kerülnek..." readonly style="background: #2a2a2a;"></textarea>
-        </div>
+                        <div class="form-group">
+                            <label>🎸 Zenei stílus (automatikusan töltődik):</label>
+                            <textarea id="suno-style" rows="3" placeholder="A zenei stílus ajánlás automatikusan ide kerül..." readonly style="background: #2a2a2a;"></textarea>
+                        </div>
 
-        <div class="form-group">
-            <label>🎹 Akkordok (automatikusan töltődik):</label>
-            <textarea id="suno-chords" rows="2" placeholder="Az akkord progresszió automatikusan ide kerül..." readonly style="background: #2a2a2a;"></textarea>
-        </div>
+                        <div class="form-group">
+                            <label>🎵 Dallam info (automatikusan töltődik):</label>
+                            <textarea id="suno-melody" rows="3" placeholder="A dallam ötletek automatikusan ide kerülnek..." readonly style="background: #2a2a2a;"></textarea>
+                        </div>
 
-        <button class="btn" id="generate-suno-btn" style="width: 100%; margin: 20px 0;">
-            🎵 Suno Prompt Generálása
-        </button>
+                        <div class="form-group">
+                            <label>🎹 Akkordok (automatikusan töltődik):</label>
+                            <textarea id="suno-chords" rows="2" placeholder="Az akkord progresszió automatikusan ide kerül..." readonly style="background: #2a2a2a;"></textarea>
+                        </div>
 
-        <div id="suno-output" style="display: none;">
-            <h3>✨ Generált Suno Prompt:</h3>
-            <div style="background: #1a1a1a; padding: 20px; border-radius: 8px; border: 2px solid #9333ea; position: relative;">
-                <pre id="suno-result" style="white-space: pre-wrap; word-wrap: break-word; color: #fff; margin: 0;"></pre>
-                <button class="btn" id="copy-suno-btn" style="margin-top: 15px;">
-                    📋 Másolás Suno-ba
-                </button>
-                <div id="suno-char-count" style="margin-top: 10px; color: #888; font-size: 14px;"></div>
-            </div>
-        </div>
-    </div>
-</div>
+                        <button class="btn" id="generate-suno-btn" style="width: 100%; margin: 20px 0;">
+                            🎵 Suno Prompt Generálása
+                        </button>
 
-            <!-- Mentett dalszövegek -->
-            <div class="section">
-                <h2 class="section-title">💾 Mentett Dalszövegek</h2>
-                <div class="saved-lyrics-list" id="saved-lyrics-list">
-                    <p style="color: #9e9e9e; font-style: italic; text-align: center;">Még nincsenek mentett dalszövegek</p>
-                </div>
-                <button class="btn danger" id="clear-all-btn" style="width: 100%; margin-top: 15px; display: none;">
-                    🗑️ Összes Törlése
-                </button>
-            </div>
-
-            <!-- Chat szekció -->
-            <div class="section two-thirds">
-                <h2 class="section-title">💬 Chat Gemini-vel</h2>
-                <div class="chat-box" id="chat-box">
-                    <div class="chat-message gemini-message">
-                        Üdv! Én vagyok a Gemini, a te AI dalszövegíró asszisztensed. Hogyan segíthetek?
+                        <div id="suno-output" style="display: none;">
+                            <h3>✨ Generált Suno Prompt:</h3>
+                            <div style="background: #1a1a1a; padding: 20px; border-radius: 8px; border: 2px solid #9333ea; position: relative;">
+                                <pre id="suno-result" style="white-space: pre-wrap; word-wrap: break-word; color: #fff; margin: 0;"></pre>
+                                <button class="btn" id="copy-suno-btn" style="margin-top: 15px;">
+                                    📋 Másolás Suno-ba
+                                </button>
+                                <div id="suno-char-count" style="margin-top: 10px; color: #888; font-size: 14px;"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="chat-input-container">
-                    <input type="text" id="chat-input" placeholder="Írj egy üzenetet...">
-                    <button class="btn" id="send-chat-btn">Küldés</button>
+            </div>
+
+            <div class="secondary-panels">
+                <!-- Mentett dalszövegek -->
+                <div class="section section-saved">
+                    <h2 class="section-title">💾 Mentett Dalszövegek</h2>
+                    <div class="saved-lyrics-list" id="saved-lyrics-list">
+                        <p style="color: #9e9e9e; font-style: italic; text-align: center;">Még nincsenek mentett dalszövegek</p>
+                    </div>
+                    <button class="btn danger" id="clear-all-btn" style="width: 100%; margin-top: 15px; display: none;">
+                        🗑️ Összes Törlése
+                    </button>
+                </div>
+
+                <!-- Chat szekció -->
+                <div class="section section-chat">
+                    <h2 class="section-title">💬 Chat Gemini-vel</h2>
+                    <div class="chat-box" id="chat-box">
+                        <div class="chat-message gemini-message">
+                            Üdv! Én vagyok a Gemini, a te AI dalszövegíró asszisztensed. Hogyan segíthetek?
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chat-input" placeholder="Írj egy üzenetet...">
+                        <button class="btn" id="send-chat-btn">Küldés</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1146,29 +1219,29 @@ FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok
             return promptParts.join('\n');
         }
 
-       function showOutputActions() {
-    const regenerateBtn = document.getElementById('regenerate-btn');
-    const copyBtn = document.getElementById('copy-lyrics-btn');
-    const saveBtn = document.getElementById('save-lyrics-btn');
-    const translateBtn = document.getElementById('translate-btn');
-    
-    if (regenerateBtn) regenerateBtn.style.display = 'inline-block';
-    if (copyBtn) copyBtn.style.display = 'inline-block';
-    if (saveBtn) saveBtn.style.display = 'inline-block';
-    if (translateBtn) translateBtn.style.display = 'inline-block';
-}
+        function showOutputActions() {
+            const regenerateBtn = document.getElementById('regenerate-btn');
+            const copyBtn = document.getElementById('copy-lyrics-btn');
+            const saveBtn = document.getElementById('save-lyrics-btn');
+            const translateBtn = document.getElementById('translate-btn');
 
-function hideOutputActions() {
-    const regenerateBtn = document.getElementById('regenerate-btn');
-    const copyBtn = document.getElementById('copy-lyrics-btn');
-    const saveBtn = document.getElementById('save-lyrics-btn');
-    const translateBtn = document.getElementById('translate-btn');
-    
-    if (regenerateBtn) regenerateBtn.style.display = 'none';
-    if (copyBtn) copyBtn.style.display = 'none';
-    if (saveBtn) saveBtn.style.display = 'none';
-    if (translateBtn) translateBtn.style.display = 'none';
-}
+            if (regenerateBtn) regenerateBtn.style.display = 'inline-block';
+            if (copyBtn) copyBtn.style.display = 'inline-block';
+            if (saveBtn) saveBtn.style.display = 'inline-block';
+            if (translateBtn) translateBtn.style.display = 'inline-block';
+        }
+
+        function hideOutputActions() {
+            const regenerateBtn = document.getElementById('regenerate-btn');
+            const copyBtn = document.getElementById('copy-lyrics-btn');
+            const saveBtn = document.getElementById('save-lyrics-btn');
+            const translateBtn = document.getElementById('translate-btn');
+
+            if (regenerateBtn) regenerateBtn.style.display = 'none';
+            if (copyBtn) copyBtn.style.display = 'none';
+            if (saveBtn) saveBtn.style.display = 'none';
+            if (translateBtn) translateBtn.style.display = 'none';
+        }
 
 
         function copyToClipboard() {
