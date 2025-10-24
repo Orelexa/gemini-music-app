@@ -1727,7 +1727,9 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
         }
 
         // Versszak generálás
-        document.getElementById('generate-verse-btn').addEventListener('click', async function() {
+        const generateVerseBtn = document.getElementById('generate-verse-btn');
+        if (generateVerseBtn) {
+        generateVerseBtn.addEventListener('click', async function() {
             const currentText = interactiveEditor.value.trim();
             const btn = this;
 
@@ -1770,9 +1772,12 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 btn.textContent = '📝 Versszak Generálás';
             }
         });
+        }
 
         // Sor generálás
-        document.getElementById('generate-line-btn').addEventListener('click', async function() {
+        const generateLineBtn = document.getElementById('generate-line-btn');
+        if (generateLineBtn) {
+        generateLineBtn.addEventListener('click', async function() {
             const currentText = interactiveEditor.value.trim();
             const btn = this;
 
@@ -1815,9 +1820,12 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 btn.textContent = '✍️ Sor Generálás';
             }
         });
+        }
 
         // Szó variáció generálás
-        document.getElementById('generate-word-btn').addEventListener('click', async function() {
+        const generateWordBtn = document.getElementById('generate-word-btn');
+        if (generateWordBtn) {
+        generateWordBtn.addEventListener('click', async function() {
             const start = interactiveEditor.selectionStart;
             const end = interactiveEditor.selectionEnd;
             const selectedText = interactiveEditor.value.substring(start, end).trim();
@@ -1856,9 +1864,12 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 btn.textContent = '🔤 Szó Variáció';
             }
         });
+        }
 
         // Kijelölt rész finomítása
-        document.getElementById('refine-selection-btn').addEventListener('click', async function() {
+        const refineSelectionBtn = document.getElementById('refine-selection-btn');
+        if (refineSelectionBtn) {
+        refineSelectionBtn.addEventListener('click', async function() {
             const start = interactiveEditor.selectionStart;
             const end = interactiveEditor.selectionEnd;
             const selectedText = interactiveEditor.value.substring(start, end).trim();
@@ -1907,6 +1918,7 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 btn.textContent = '✨ Kijelölt Rész Finomítása';
             }
         });
+        }
 
         // Zenei címkék beszúrása
         document.querySelectorAll('.tag-btn').forEach(btn => {
@@ -1930,7 +1942,9 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
         });
 
         // Szöveg másolása
-        document.getElementById('copy-interactive-btn').addEventListener('click', function() {
+        const copyInteractiveBtn = document.getElementById('copy-interactive-btn');
+        if (copyInteractiveBtn) {
+        copyInteractiveBtn.addEventListener('click', function() {
             const text = interactiveEditor.value;
 
             if (!text) {
@@ -1949,17 +1963,23 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 alert('Másolás sikertelen!');
             });
         });
+        }
 
         // Szöveg törlése
-        document.getElementById('clear-interactive-btn').addEventListener('click', function() {
+        const clearInteractiveBtn = document.getElementById('clear-interactive-btn');
+        if (clearInteractiveBtn) {
+        clearInteractiveBtn.addEventListener('click', function() {
             if (confirm('Biztosan törölni szeretnéd a teljes szöveget?')) {
                 interactiveEditor.value = '';
                 updateInteractivePreview();
             }
         });
+        }
 
         // Preview mentése
-        document.getElementById('save-preview-btn').addEventListener('click', function() {
+        const savePreviewBtn = document.getElementById('save-preview-btn');
+        if (savePreviewBtn) {
+        savePreviewBtn.addEventListener('click', function() {
             const text = interactiveEditor.value.trim();
 
             if (!text) {
@@ -1985,6 +2005,7 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
             alert('✅ Dalszöveg elmentve!');
             loadSavedLyrics();
         });
+        }
 
         // Chat Enter gomb támogatás
         document.getElementById('chat-input').addEventListener('keypress', (e) => {
