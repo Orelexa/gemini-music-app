@@ -378,16 +378,41 @@
             display: flex;
             flex-direction: row;
             width: 100%;
+            gap: 20px;
         }
 
+        #interactive-content .editor-card-left {
+         flex: 2;
+         min-width: 0;
+     }
+
+     #interactive-content .editor-card-center {
+         flex: 1;
+         min-width: 0;
+     }
+
+     #interactive-content .editor-card-right {
+         flex: 2;
+         min-width: 0;
+     }
+
         @media (max-width: 1200px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-            .section.two-thirds {
-                grid-column: span 1;
-            }
-        }
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+    .section.two-thirds {
+        grid-column: span 1;
+    }
+    #interactive-content.tab-content.active {
+        flex-direction: column;
+    }
+    #interactive-content .editor-card-left,
+    #interactive-content .editor-card-center,
+    #interactive-content .editor-card-right {
+        flex: 1;
+        width: 100%;
+    }
+}
     </style>
 </head>
 <body>
@@ -586,8 +611,8 @@
             <div class="tab-content" id="interactive-content">
 
                     <!-- 1. Kártya: Szöveg Szerkesztő - 40% -->
-                    <div style="width: 40%; padding: 20px; box-sizing: border-box; background: rgba(40, 40, 40, 0.8); border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);">
-                        <h3 style="color: #bb86fc; margin-bottom: 15px; font-size: 1.2rem;">✏️ Szöveg Szerkesztő</h3>
+                    <div style="class="editor-card-left; padding: 20px; box-sizing: border-box; background: lightblue; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <h3 style="color: #1a1a2e; margin-bottom: 15px; font-size: 1.2rem;">✏️ Szöveg Szerkesztő</h3>
                         <textarea id="interactive-editor"
                                   placeholder="Illeszd be vagy írd ide a szövegedet... Jelölj ki bármilyen részt és használd az AI eszközöket a finomításhoz!"
                                   style="width: 100%; min-height: 600px; font-size: 15px; line-height: 1.8; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; resize: vertical;"></textarea>
@@ -599,8 +624,8 @@
                     </div>
 
                     <!-- 2. Kártya: AI Eszközök - 20% -->
-                    <div style="width: 20%; padding: 20px; box-sizing: border-box; background: rgba(40, 40, 40, 0.8); border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);">
-                        <h3 style="color: #bb86fc; margin-bottom: 15px; font-size: 1.2rem;">🤖 AI Generálás</h3>
+                    <div style="class="editor-card-center; box-sizing: border-box; background: lightblue; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <h3 style="color: #1a1a2e; margin-bottom: 15px; font-size: 1.2rem;">🤖 AI Generálás</h3>
                         <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px;">
                             <button class="btn" id="generate-verse-btn">📝 Versszak Generálás</button>
                             <button class="btn" id="generate-line-btn">✍️ Sor Generálás</button>
@@ -628,8 +653,8 @@
                     </div>
 
                     <!-- 3. Kártya: Szerkesztett Szöveg Preview - 40% -->
-                    <div style="width: 40%; padding: 20px; box-sizing: border-box; background: rgba(40, 40, 40, 0.8); border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);">
-                        <h3 style="color: #bb86fc; margin-bottom: 15px; font-size: 1.2rem;">📄 Szerkesztett Szöveg</h3>
+                    <div style="class="editor-card-right; box-sizing: border-box; background: lightblue; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <h3 style="color: #1a1a2e; margin-bottom: 15px; font-size: 1.2rem;">📄 Szerkesztett Szöveg</h3>
                         <div id="interactive-preview"
                              style="background: rgba(20, 20, 20, 0.8);
                                     border: 2px solid rgba(255, 255, 255, 0.1);
