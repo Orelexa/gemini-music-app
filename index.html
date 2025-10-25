@@ -1705,7 +1705,7 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
 
                         const before = text.substring(0, start);
                         const after = text.substring(end);
-                        interactiveEditor.value = before + '\n\n' + newVerse + '\n\n' + after;
+                        interactiveEditor.value = before + newVerse + after;
                         updateInteractivePreview();
                     } else {
                         alert('Hiba: ' + (data.error || 'Ismeretlen hiba'));
@@ -1753,7 +1753,7 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
 
                         const before = text.substring(0, start);
                         const after = text.substring(end);
-                        interactiveEditor.value = before + '\n' + newLine + '\n' + after;
+                        interactiveEditor.value = before + newLine + after;
                         updateInteractivePreview();
                     } else {
                         alert('Hiba: ' + (data.error || 'Ismeretlen hiba'));
