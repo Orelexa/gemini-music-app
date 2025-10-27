@@ -741,17 +741,23 @@
             <input type="file" id="import-file-input" accept=".json" style="display: none;">
         </div>
 
-        <!-- Chat szekció -->
+        <!-- Translator szekció -->
         <div class="section two-thirds">
-                <h2 class="section-title">💬 Chat Gemini-vel</h2>
-                <div class="chat-box" id="chat-box">
-                    <div class="chat-message gemini-message">
-                        Üdv! Én vagyok a Gemini, a te AI dalszövegíró asszisztensed. Hogyan segíthetek?
+                <h2 class="section-title">🌍 Fordító (Angol ⇄ Magyar)</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label>Forrás szöveg</label>
+                        <textarea id="source-text" placeholder="Írj vagy illeszd be a szöveget amit le szeretnél fordítani..." style="min-height: 200px; font-size: 14px;"></textarea>
+                    </div>
+                    <div>
+                        <label>Fordítás</label>
+                        <textarea id="translated-text" placeholder="A fordítás itt fog megjelenni..." style="min-height: 200px; font-size: 14px; background: rgba(30, 30, 30, 0.9);" readonly></textarea>
                     </div>
                 </div>
-                <div class="chat-input-container">
-                    <input type="text" id="chat-input" placeholder="Írj egy üzenetet...">
-                    <button class="btn" id="send-chat-btn">Küldés</button>
+                <div class="btn-group">
+                    <button class="btn" id="translate-en-hu-btn">🇬🇧 → 🇭🇺 Angol → Magyar</button>
+                    <button class="btn secondary" id="translate-hu-en-btn">🇭🇺 → 🇬🇧 Magyar → Angol</button>
+                    <button class="btn secondary" id="copy-translation-btn" style="display:none;">📋 Fordítás Másolása</button>
                 </div>
             </div>
         </div>
@@ -759,7 +765,6 @@
 
     <script>
         let lastGeneratedLyrics = '';
-        let chatHistory = [];
         let selectedRhymePattern = 'ABAB';
         let currentImageData = null;
 
@@ -1348,51 +1353,104 @@ FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok
             }
         });
 
-        // Chat küldése
-        document.getElementById('send-chat-btn').addEventListener('click', async () => {
-            const chatInput = document.getElementById('chat-input');
-            const chatBox = document.getElementById('chat-box');
-            const userMessage = chatInput.value.trim();
-            if (!userMessage) return;
+        // Fordítás: Angol → Magyar
+        document.getElementById('translate-en-hu-btn').addEventListener('click', async () => {
+            const sourceText = document.getElementById('source-text').value.trim();
+            if (!sourceText) {
+                alert('Kérlek, írj be egy szöveget a fordításhoz!');
+                return;
+            }
 
-            const userMsgDiv = document.createElement('div');
-            userMsgDiv.className = 'chat-message user-message';
-            userMsgDiv.textContent = userMessage;
-            chatBox.appendChild(userMsgDiv);
-            chatInput.value = '';
+            const btn = document.getElementById('translate-en-hu-btn');
+            const translatedTextarea = document.getElementById('translated-text');
 
-            chatHistory.push({ role: 'user', parts: [{ text: userMessage }] });
-            
-            const geminiMsgDiv = document.createElement('div');
-            geminiMsgDiv.className = 'chat-message gemini-message';
-            geminiMsgDiv.textContent = 'A Gemini válaszol...';
-            chatBox.appendChild(geminiMsgDiv);
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Fordítás...';
+            translatedTextarea.value = 'Fordítás folyamatban...';
 
-            const requestBody = { prompt: chatHistory.map(h => `${h.role === 'user' ? 'Felhasználó' : 'Gemini'}: ${h.parts[0].text}`).join('\n'), mode: 'chat' };
+            const prompt = `Fordítsd le ezt a szöveget angolról magyarra. Ügyelj a természetes nyelvre és a pontos jelentésre. Csak a fordítást add meg, semmi mást.\n\nSzöveg:\n${sourceText}`;
 
             try {
                 const response = await fetch('/.netlify/functions/gemini', {
                     method: 'POST',
-                    body: JSON.stringify(requestBody),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    body: JSON.stringify({ prompt, mode: 'translate' }),
+                    headers: { 'Content-Type': 'application/json' }
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    geminiMsgDiv.textContent = data.message.trim();
-                    chatHistory.push({ role: 'model', parts: [{ text: data.message.trim() }] });
+                    translatedTextarea.value = data.message.trim();
+                    document.getElementById('copy-translation-btn').style.display = 'inline-block';
                 } else {
-                    geminiMsgDiv.textContent = `Hiba: ${data.error}`;
+                    translatedTextarea.value = `Hiba: ${data.error}`;
                 }
             } catch (error) {
-                console.error('Chat hiba:', error);
-                geminiMsgDiv.textContent = 'Hiba történt a chat során.';
+                translatedTextarea.value = `Hiba: ${error.message}`;
             } finally {
-                chatBox.scrollTop = chatBox.scrollHeight;
+                btn.disabled = false;
+                btn.innerHTML = '🇬🇧 → 🇭🇺 Angol → Magyar';
             }
+        });
+
+        // Fordítás: Magyar → Angol
+        document.getElementById('translate-hu-en-btn').addEventListener('click', async () => {
+            const sourceText = document.getElementById('source-text').value.trim();
+            if (!sourceText) {
+                alert('Kérlek, írj be egy szöveget a fordításhoz!');
+                return;
+            }
+
+            const btn = document.getElementById('translate-hu-en-btn');
+            const translatedTextarea = document.getElementById('translated-text');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Fordítás...';
+            translatedTextarea.value = 'Fordítás folyamatban...';
+
+            const prompt = `Fordítsd le ezt a szöveget magyarról angolra. Ügyelj a természetes nyelvre és a pontos jelentésre. Csak a fordítást add meg, semmi mást.\n\nSzöveg:\n${sourceText}`;
+
+            try {
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify({ prompt, mode: 'translate' }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    translatedTextarea.value = data.message.trim();
+                    document.getElementById('copy-translation-btn').style.display = 'inline-block';
+                } else {
+                    translatedTextarea.value = `Hiba: ${data.error}`;
+                }
+            } catch (error) {
+                translatedTextarea.value = `Hiba: ${error.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🇭🇺 → 🇬🇧 Magyar → Angol';
+            }
+        });
+
+        // Fordítás másolása
+        document.getElementById('copy-translation-btn').addEventListener('click', () => {
+            const translatedText = document.getElementById('translated-text').value;
+            if (!translatedText) {
+                alert('Nincs mit másolni!');
+                return;
+            }
+
+            navigator.clipboard.writeText(translatedText).then(() => {
+                const btn = document.getElementById('copy-translation-btn');
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Másolva!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                alert('Másolás sikertelen!');
+            });
         });
 
         document.getElementById('copy-lyrics-btn').addEventListener('click', () => {
@@ -1484,13 +1542,6 @@ function hideOutputActions() {
             
             if (toValue < fromValue) {
                 fromSelect.value = toValue;
-            }
-        });
-
-        // Chat Enter gomb támogatás
-        document.getElementById('chat-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('send-chat-btn').click();
             }
         });
 
@@ -2059,13 +2110,6 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 loadSavedLyrics();
             });
         }
-
-        // Chat Enter gomb támogatás
-        document.getElementById('chat-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('send-chat-btn').click();
-            }
-        });
 
         // Oldal betöltésekor
         window.addEventListener('load', () => {
