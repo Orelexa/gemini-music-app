@@ -1,3 +1,9 @@
+---
+name: PDF Generator
+description: Creates formatted PDF documents with DejaVu Sans font family
+version: 1.0.0
+---
+
 # PDF Dokumentum Készítő Skill
 
 Ez a skill PDF dokumentumok készítésére szolgál, meghatározott formázással és DejaVu Sans betűcsaláddal.
