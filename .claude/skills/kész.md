@@ -1,5 +1,5 @@
 ---
-name: Lépésről lépésre kódolás
+name: lepesrol-lepesre-kodolas
 description: Ez a skill biztosítja, hogy a kódolás lépésről lépésre történjen, minden lépés után megvárva a felhasználó "kész" megerősítését mielőtt a következő lépéssel folytatnánk.
 ---
 
