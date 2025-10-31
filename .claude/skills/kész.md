@@ -1,3 +1,8 @@
+---
+name: Lépésről lépésre kódolás
+description: Ez a skill biztosítja, hogy a kódolás lépésről lépésre történjen, minden lépés után megvárva a felhasználó "kész" megerősítését mielőtt a következő lépéssel folytatnánk.
+---
+
 # Lépésről lépésre kódolás skill
 
 Ez a skill biztosítja, hogy a kódolás lépésről lépésre történjen, és minden lépés után megvárd a felhasználó megerősítését.
