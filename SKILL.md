@@ -1,5 +1,5 @@
 ---
-name: PDF Generator
+name: pdf-generator
 description: Creates formatted PDF documents with DejaVu Sans font family
 ---
 
