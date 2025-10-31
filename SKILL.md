@@ -1,7 +1,6 @@
 ---
 name: PDF Generator
 description: Creates formatted PDF documents with DejaVu Sans font family
-version: 1.0.0
 ---
 
 # PDF Dokumentum Készítő Skill
