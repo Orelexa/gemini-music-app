@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suno Lyrics Generator - AI Powered</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: #ffffff;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(30px);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .subtitle {
+            color: #667eea;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid #e0e7ff;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            filter: drop-shadow(0 2px 5px rgba(102, 126, 234, 0.3));
+        }
+
+        .card-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0e7ff;
+            border-radius: 12px;
+            background: #ffffff;
+            color: #2d3748;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            background: #f8f9ff;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .output-area {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            border: 3px solid #667eea;
+            border-radius: 20px;
+            padding: 30px;
+            min-height: 300px;
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 500px;
+            position: relative;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .output-area.empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0aec0;
+            font-style: italic;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(79, 172, 254, 0.4);
+            border-color: white;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #e0e7ff;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: #a0aec0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -3px;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .info-box strong {
+            font-size: 1.1rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .char-count {
+            text-align: right;
+            color: #a0aec0;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        .char-count.warning {
+            color: #f5576c;
+        }
+
+        .char-count.success {
+            color: #00f2fe;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 25px;
+            }
+        }
+
+        /* Floating particles effect */
+        .particle {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: float 20s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 0;
+            }
+            10%, 90% {
+                opacity: 1;
+            }
+            50% {
+                transform: translate(100px, -100px) rotate(180deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating particles -->
+    <div class="particle" style="left: 10%; top: 20%; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 80%; top: 30%; animation-delay: 3s;"></div>
+    <div class="particle" style="left: 50%; top: 60%; animation-delay: 6s;"></div>
+    <div class="particle" style="left: 20%; top: 80%; animation-delay: 9s;"></div>
+    <div class="particle" style="left: 90%; top: 10%; animation-delay: 12s;"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎵 Suno Lyrics Generator</h1>
+            <p class="subtitle">AI-Powered Lyrics Creation for Suno</p>
+            <span class="badge">Powered by Gemini AI</span>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="generator">🎼 Dalszöveg Generátor</button>
+            <button class="tab" data-tab="structure">📋 Struktúra Szerkesztő</button>
+            <button class="tab" data-tab="suno-prompt">🎵 Suno Prompt</button>
+        </div>
+
+        <!-- Tab 1: Dalszöveg Generátor -->
+        <div class="tab-content active" id="generator-content">
+            <div class="grid">
+                <!-- Input Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">⚙️</span>
+                        <h2 class="card-title">Dalszöveg Beállítások</h2>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🎭 Téma / Mondanivaló</label>
+                        <textarea id="theme" placeholder="pl. elveszett szerelem, szabadság, kaland, álmok..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🎸 Zenei Stílus</label>
+                        <select id="genre">
+                            <option value="">Automatikus (AI választ)</option>
+                            <option value="pop">Pop</option>
+                            <option value="rock">Rock</option>
+                            <option value="indie">Indie</option>
+                            <option value="electronic">Electronic</option>
+                            <option value="hiphop">Hip-Hop</option>
+                            <option value="ballad">Ballad</option>
+                            <option value="folk">Folk</option>
+                            <option value="metal">Metal</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🌍 Nyelv</label>
+                        <select id="language">
+                            <option value="magyar">Magyar</option>
+                            <option value="english">English</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📊 Versszakok száma</label>
+                        <select id="verses">
+                            <option value="2">2 versszak</option>
+                            <option value="3" selected>3 versszak</option>
+                            <option value="4">4 versszak</option>
+                            <option value="5">5 versszak</option>
+                        </select>
+                    </div>
+
+                    <button class="btn" id="generate-btn">
+                        🎼 Dalszöveg Generálása
+                    </button>
+                </div>
+
+                <!-- Output Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">📝</span>
+                        <h2 class="card-title">Generált Dalszöveg</h2>
+                    </div>
+
+                    <div class="output-area empty" id="output">
+                        <span>A generált dalszöveg itt fog megjelenni...</span>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn secondary" id="copy-btn" style="display:none;">📋 Másolás</button>
+                        <button class="btn success" id="save-btn" style="display:none;">💾 Mentés</button>
+                        <button class="btn" id="regenerate-btn" style="display:none;">🔄 Újra</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats" id="stats" style="display:none;">
+                <div class="stat-card">
+                    <span class="stat-number" id="line-count">0</span>
+                    <span class="stat-label">Sorok</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="word-count">0</span>
+                    <span class="stat-label">Szavak</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="char-count">0</span>
+                    <span class="stat-label">Karakterek</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Struktúra Szerkesztő -->
+        <div class="tab-content" id="structure-content">
+            <div class="card full-width">
+                <div class="card-header">
+                    <span class="card-icon">✏️</span>
+                    <h2 class="card-title">Interaktív Szerkesztő</h2>
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 Hogyan használd:</strong>
+                    <p>1. Generálj vagy írj dalszöveget</p>
+                    <p>2. Használd a zenei címkéket a struktúra megadásához</p>
+                    <p>3. Az AI segít finomítani a szöveget</p>
+                </div>
+
+                <div class="form-group">
+                    <label>✍️ Szövegszerkesztő</label>
+                    <textarea id="editor" placeholder="Írj vagy illeszd be a dalszöveget ide...
+Használd a zenei címkéket:
+
+[Intro]
+[Verse]
+[Pre-Chorus]
+[Chorus]
+[Bridge]
+[Outro]"></textarea>
+                    <div class="char-count" id="editor-char-count">0 / 3000 karakter</div>
+                </div>
+
+                <div class="form-group">
+                    <label>🏷️ Zenei Címkék (Kattints a beszúráshoz)</label>
+                    <div class="tag-container">
+                        <div class="tag" data-tag="[Intro]">Intro</div>
+                        <div class="tag" data-tag="[Verse]">Verse</div>
+                        <div class="tag" data-tag="[Pre-Chorus]">Pre-Chorus</div>
+                        <div class="tag" data-tag="[Chorus]">Chorus</div>
+                        <div class="tag" data-tag="[Bridge]">Bridge</div>
+                        <div class="tag" data-tag="[Outro]">Outro</div>
+                        <div class="tag" data-tag="[Solo]">Solo</div>
+                        <div class="tag" data-tag="[Break]">Break</div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn" id="refine-btn">✨ AI Finomítás</button>
+                    <button class="btn secondary" id="add-verse-btn">➕ Versszak Hozzáadás</button>
+                    <button class="btn success" id="copy-editor-btn">📋 Másolás</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Suno Prompt -->
+        <div class="tab-content" id="suno-prompt-content">
+            <div class="card full-width">
+                <div class="card-header">
+                    <span class="card-icon">🎵</span>
+                    <h2 class="card-title">Suno AI Prompt Generátor</h2>
+                </div>
+
+                <div class="info-box">
+                    <strong>ℹ️ Mi ez?</strong>
+                    <p>Ez a funkció létrehozza a Suno AI számára optimalizált prompt-ot, amely tartalmazza a zenei stílust, hangulatot és instrukciók</p>
+                </div>
+
+                <div class="form-group">
+                    <label>📝 Dalszöveg (automatikusan töltődik)</label>
+                    <textarea id="suno-lyrics" rows="8" placeholder="A generált dalszöveg automatikusan ide kerül..." readonly></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>🎸 Zenei Stílus Leírás (opcionális)</label>
+                    <textarea id="style-description" rows="3" placeholder="pl. Energikus pop-rock dallal, szintetizátorral és elektromos gitárral..."></textarea>
+                </div>
+
+                <button class="btn" id="generate-suno-btn">
+                    🎵 Suno Prompt Generálása
+                </button>
+
+                <div id="suno-result" style="display:none; margin-top: 25px;">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">✨</span>
+                            <h2 class="card-title">Generált Suno Prompt</h2>
+                        </div>
+
+                        <div class="output-area" id="suno-output"></div>
+                        <div class="char-count" id="suno-char-count"></div>
+
+                        <div class="btn-group">
+                            <button class="btn success" id="copy-suno-btn">📋 Másolás Suno-ba</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLyrics = '';
+        let savedLyrics = JSON.parse(localStorage.getItem('sunoLyrics') || '[]');
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                tab.classList.add('active');
+                const tabName = tab.dataset.tab;
+                document.getElementById(`${tabName}-content`).classList.add('active');
+            });
+        });
+
+        // Generate lyrics
+        document.getElementById('generate-btn').addEventListener('click', async () => {
+            const theme = document.getElementById('theme').value.trim();
+            const genre = document.getElementById('genre').value;
+            const language = document.getElementById('language').value;
+            const verses = document.getElementById('verses').value;
+
+            if (!theme) {
+                alert('Kérlek, add meg a dalszöveg témáját!');
+                return;
+            }
+
+            const output = document.getElementById('output');
+            const generateBtn = document.getElementById('generate-btn');
+
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span class="loading"></span> Generálás folyamatban...';
+            output.innerHTML = '<span>Generálás folyamatban...</span>';
+            output.classList.add('empty');
+
+            const languageText = language === 'magyar' ? 'magyar nyelven' : 'in English';
+            const genreText = genre ? `${genre} stílusban` : '';
+
+            const prompt = `Írj egy ${verses} versszakos dalszöveget ${languageText} a következő témában: "${theme}". ${genreText}
+
+A dalszöveg legyen Suno AI kompatibilis formátumban, a következő struktúrával:
+- Használj [Verse], [Chorus], [Bridge] címkéket
+- Minden versszak 4-6 sorból álljon
+- A refrén legyen emlékezetes és ismétlődő
+- Legyenek benne érzelmek és képi világ
+- ${language === 'magyar' ? 'Magyar rímekkel és ritmussal' : 'With rhymes and good rhythm'}
+
+Csak a dalszöveget add meg, semmi mást!`;
+
+            try {
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        mode: 'lyrics-gen'
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.message) {
+                    currentLyrics = data.message.trim();
+                    output.textContent = currentLyrics;
+                    output.classList.remove('empty');
+
+                    // Show buttons
+                    document.getElementById('copy-btn').style.display = 'block';
+                    document.getElementById('save-btn').style.display = 'block';
+                    document.getElementById('regenerate-btn').style.display = 'block';
+
+                    // Update stats
+                    updateStats(currentLyrics);
+                    document.getElementById('stats').style.display = 'grid';
+
+                    // Auto-fill editor and suno tabs
+                    document.getElementById('editor').value = currentLyrics;
+                    document.getElementById('suno-lyrics').value = currentLyrics;
+                    updateEditorCharCount();
+                } else {
+                    output.innerHTML = '<span>Hiba: ' + (data.error || 'Ismeretlen hiba') + '</span>';
+                }
+            } catch (error) {
+                output.innerHTML = '<span>Hiba: ' + error.message + '</span>';
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '🎼 Dalszöveg Generálása';
+            }
+        });
+
+        // Copy lyrics
+        document.getElementById('copy-btn').addEventListener('click', () => {
+            copyToClipboard(currentLyrics, 'copy-btn', '📋 Másolás');
+        });
+
+        // Save lyrics
+        document.getElementById('save-btn').addEventListener('click', () => {
+            if (!currentLyrics) {
+                alert('Nincs mit menteni!');
+                return;
+            }
+
+            const theme = document.getElementById('theme').value.trim() || 'Névtelen dalszöveg';
+            savedLyrics.unshift({
+                id: Date.now(),
+                title: theme,
+                lyrics: currentLyrics,
+                date: new Date().toISOString()
+            });
+
+            localStorage.setItem('sunoLyrics', JSON.stringify(savedLyrics));
+            alert('✅ Dalszöveg elmentve!');
+        });
+
+        // Regenerate lyrics
+        document.getElementById('regenerate-btn').addEventListener('click', () => {
+            document.getElementById('generate-btn').click();
+        });
+
+        // Update statistics
+        function updateStats(text) {
+            const lines = text.split('\n').filter(line => line.trim() && !line.startsWith('[')).length;
+            const words = text.split(/\s+/).filter(word => word.trim() && !word.startsWith('[')).length;
+            const chars = text.length;
+
+            document.getElementById('line-count').textContent = lines;
+            document.getElementById('word-count').textContent = words;
+            document.getElementById('char-count').textContent = chars;
+        }
+
+        // Tag insertion
+        document.querySelectorAll('.tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                const tagText = tag.dataset.tag;
+                const editor = document.getElementById('editor');
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                const text = editor.value;
+
+                const before = text.substring(0, start);
+                const after = text.substring(end);
+                const newText = before + '\n' + tagText + '\n' + after;
+
+                editor.value = newText;
+                editor.focus();
+
+                const newPosition = start + tagText.length + 2;
+                editor.setSelectionRange(newPosition, newPosition);
+                updateEditorCharCount();
+            });
+        });
+
+        // Editor character count
+        document.getElementById('editor').addEventListener('input', updateEditorCharCount);
+
+        function updateEditorCharCount() {
+            const editor = document.getElementById('editor');
+            const count = editor.value.length;
+            const countEl = document.getElementById('editor-char-count');
+
+            countEl.textContent = `${count} / 3000 karakter`;
+
+            if (count > 3000) {
+                countEl.classList.add('warning');
+                countEl.classList.remove('success');
+            } else if (count > 2000) {
+                countEl.classList.add('success');
+                countEl.classList.remove('warning');
+            } else {
+                countEl.classList.remove('warning', 'success');
+            }
+        }
+
+        // Refine with AI
+        document.getElementById('refine-btn').addEventListener('click', async () => {
+            const editor = document.getElementById('editor');
+            const text = editor.value.trim();
+
+            if (!text) {
+                alert('Nincs mit finomítani! Írj vagy generálj először dalszöveget.');
+                return;
+            }
+
+            const btn = document.getElementById('refine-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Finomítás...';
+
+            const prompt = `Finomítsd és javítsd ezt a dalszöveget. Tedd költőibbé, érzelmesebben és kifejezőbbé. Tartsd meg a struktúrát és a címkéket ([Verse], [Chorus], stb.). Csak a finomított szöveget add vissza.\n\nDalszöveg:\n${text}`;
+
+            try {
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        mode: 'lyrics-gen'
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.message) {
+                    editor.value = data.message.trim();
+                    updateEditorCharCount();
+                    alert('✅ Dalszöveg finomítva!');
+                } else {
+                    alert('Hiba: ' + (data.error || 'Ismeretlen hiba'));
+                }
+            } catch (error) {
+                alert('Hiba: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '✨ AI Finomítás';
+            }
+        });
+
+        // Add verse
+        document.getElementById('add-verse-btn').addEventListener('click', async () => {
+            const editor = document.getElementById('editor');
+            const currentText = editor.value.trim();
+
+            const btn = document.getElementById('add-verse-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Generálás...';
+
+            let prompt = '';
+            if (currentText) {
+                prompt = `Írj egy új versszakot ([Verse]) ehhez a dalszöveghez. A versszak stílusa és témája illeszkedjen a meglévő szöveghez. 4-6 sor legyen. Csak az új versszakot add meg a [Verse] címkével.\n\nMeglévő szöveg:\n${currentText}`;
+            } else {
+                prompt = `Írj egy új dalszöveg versszakot 4-6 sorral. Kezdd [Verse] címkével.`;
+            }
+
+            try {
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        mode: 'lyrics-gen'
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.message) {
+                    const newVerse = data.message.trim();
+                    editor.value = currentText + '\n\n' + newVerse;
+                    updateEditorCharCount();
+                } else {
+                    alert('Hiba: ' + (data.error || 'Ismeretlen hiba'));
+                }
+            } catch (error) {
+                alert('Hiba: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '➕ Versszak Hozzáadás';
+            }
+        });
+
+        // Copy editor
+        document.getElementById('copy-editor-btn').addEventListener('click', () => {
+            const text = document.getElementById('editor').value;
+            copyToClipboard(text, 'copy-editor-btn', '📋 Másolás');
+        });
+
+        // Generate Suno Prompt
+        document.getElementById('generate-suno-btn').addEventListener('click', async () => {
+            const lyrics = document.getElementById('suno-lyrics').value.trim();
+            const styleDesc = document.getElementById('style-description').value.trim();
+
+            if (!lyrics) {
+                alert('Először generálj vagy írj be egy dalszöveget!');
+                return;
+            }
+
+            const btn = document.getElementById('generate-suno-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Generálás...';
+
+            const prompt = `Create a Suno AI STYLE PROMPT for music production. This is ONLY about the SOUND and PRODUCTION, not lyrics!
+
+CRITICAL RULES:
+- DO NOT use [Verse], [Chorus], [Bridge] or ANY square brackets []
+- DO NOT use (emotions) or ANY parentheses ()
+- Write in simple flowing sentences
+- Describe: genre, instruments, vocals, tempo, mood, production
+- Maximum 1000 characters
+- English only
+
+INFORMATION:
+Lyrics preview: ${lyrics.substring(0, 300)}...
+${styleDesc ? `Style description: ${styleDesc}` : ''}
+
+EXAMPLE FORMAT:
+Melancholic indie folk with acoustic guitar fingerpicking
+Soft male vocals with intimate vulnerable delivery
+Slow tempo around 70 BPM
+Layered harmonies building in chorus sections
+Minimal piano and subtle strings
+Warm organic production with natural reverb
+Reflective and bittersweet mood with hopeful undertones
+
+Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!`;
+
+            try {
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        mode: 'suno-prompt'
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.message) {
+                    let sunoPrompt = data.message.trim();
+
+                    // Limit to 1000 chars
+                    if (sunoPrompt.length > 1000) {
+                        sunoPrompt = sunoPrompt.substring(0, 1000);
+                    }
+
+                    document.getElementById('suno-output').textContent = sunoPrompt;
+                    document.getElementById('suno-result').style.display = 'block';
+
+                    // Update char count
+                    const charCount = sunoPrompt.length;
+                    const charCountEl = document.getElementById('suno-char-count');
+                    charCountEl.textContent = `${charCount} / 1000 karakter`;
+                    charCountEl.className = 'char-count ' + (charCount > 1000 ? 'warning' : 'success');
+                } else {
+                    alert('Hiba: ' + (data.error || 'Ismeretlen hiba'));
+                }
+            } catch (error) {
+                alert('Hiba: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🎵 Suno Prompt Generálása';
+            }
+        });
+
+        // Copy Suno prompt
+        document.getElementById('copy-suno-btn').addEventListener('click', () => {
+            const text = document.getElementById('suno-output').textContent;
+            copyToClipboard(text, 'copy-suno-btn', '📋 Másolás Suno-ba');
+        });
+
+        // Utility function for copying to clipboard
+        function copyToClipboard(text, buttonId, originalText) {
+            if (!text) {
+                alert('Nincs mit másolni!');
+                return;
+            }
+
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById(buttonId);
+                btn.textContent = '✅ Másolva!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                alert('Másolás sikertelen!');
+            });
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            updateEditorCharCount();
+        });
+    </script>
+</body>
+</html>
