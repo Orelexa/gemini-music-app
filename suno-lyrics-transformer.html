@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suno Lyrics Transformer - AI Powered</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: #ffffff;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(30px);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .subtitle {
+            color: #667eea;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid #e0e7ff;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.1);
+        }
+
+        .panel.input {
+            border-color: #667eea;
+        }
+
+        .panel.output {
+            border-color: #f093fb;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e7ff;
+        }
+
+        .panel-icon {
+            font-size: 2rem;
+            filter: drop-shadow(0 2px 5px rgba(102, 126, 234, 0.3));
+        }
+
+        .panel-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0e7ff;
+            border-radius: 12px;
+            background: #ffffff;
+            color: #2d3748;
+            font-size: 15px;
+            font-family: 'Courier New', monospace;
+            line-height: 1.8;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            background: #f8f9ff;
+        }
+
+        textarea.input-area {
+            min-height: 300px;
+        }
+
+        textarea.output-area {
+            min-height: 300px;
+            background: #f8f9ff;
+        }
+
+        textarea.small {
+            min-height: 80px;
+        }
+
+        .syllable-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .syllable-count {
+            font-size: 1.2rem;
+            font-weight: 900;
+        }
+
+        .generate-section {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+            padding: 12px 30px;
+            font-size: 14px;
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+            padding: 12px 30px;
+            font-size: 14px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .analysis-box {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .analysis-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .analysis-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .info-box strong {
+            font-size: 1.1rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .generate-section {
+                grid-column: 1;
+            }
+        }
+
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: float 20s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 0;
+            }
+            10%, 90% {
+                opacity: 1;
+            }
+            50% {
+                transform: translate(100px, -100px) rotate(180deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating particles -->
+    <div class="particle" style="left: 10%; top: 20%; animation-delay: 0s;"></div>
+    <div class="particle" style="left: 80%; top: 30%; animation-delay: 3s;"></div>
+    <div class="particle" style="left: 50%; top: 60%; animation-delay: 6s;"></div>
+    <div class="particle" style="left: 20%; top: 80%; animation-delay: 9s;"></div>
+    <div class="particle" style="left: 90%; top: 10%; animation-delay: 12s;"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎵 Suno Lyrics Transformer</h1>
+            <p class="subtitle">Transform Lyrics While Preserving Structure & Phonetics</p>
+            <span class="badge">Powered by Gemini AI</span>
+        </div>
+
+        <div class="info-box">
+            <strong>🎯 How It Works:</strong>
+            <ul>
+                <li><strong>Input 1:</strong> Original English lyrics (template structure)</li>
+                <li><strong>Input 2:</strong> New theme/topic</li>
+                <li><strong>Output 1:</strong> New English lyrics with SAME structure, syllables, rhymes, phonetics - NEW theme</li>
+                <li><strong>Output 2:</strong> Hungarian translation of the new lyrics</li>
+            </ul>
+        </div>
+
+        <div class="main-grid">
+            <!-- INPUT PANEL -->
+            <div class="panel input">
+                <div class="panel-header">
+                    <span class="panel-icon">📝</span>
+                    <h2 class="panel-title">Input</h2>
+                </div>
+
+                <div class="form-group">
+                    <label>🎼 Original English Lyrics (Template)</label>
+                    <textarea id="original-lyrics" class="input-area" placeholder="Enter original English lyrics with structure tags...
+
+Example:
+[Verse 1]
+I walk alone at night
+Under the pale moonlight
+Dreams are fading fast
+Memories of the past
+
+[Chorus]
+Take me back to yesterday
+When the skies were not so gray
+..."></textarea>
+                    <div class="syllable-info">
+                        <span>Total Syllables:</span>
+                        <span class="syllable-count" id="original-syllables">0</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>💡 New Theme/Topic</label>
+                    <textarea id="new-theme" class="small" placeholder="Enter the new theme/topic...
+
+Example:
+- Freedom and breaking free
+- Ocean and adventure
+- Hope and new beginnings
+- Lost love and regret"></textarea>
+                </div>
+            </div>
+
+            <!-- OUTPUT PANEL -->
+            <div class="panel output">
+                <div class="panel-header">
+                    <span class="panel-icon">✨</span>
+                    <h2 class="panel-title">Output</h2>
+                </div>
+
+                <div class="form-group">
+                    <label>🎵 New English Lyrics (Same Structure)</label>
+                    <textarea id="new-lyrics" class="output-area" placeholder="New English lyrics will appear here..." readonly></textarea>
+                    <div class="syllable-info" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <span>Total Syllables:</span>
+                        <span class="syllable-count" id="new-syllables">0</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn secondary" id="copy-new-btn" style="display:none;">📋 Copy</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>🇭🇺 Hungarian Translation</label>
+                    <textarea id="hungarian-translation" class="output-area" placeholder="Hungarian translation will appear here..." readonly></textarea>
+                    <div class="btn-group">
+                        <button class="btn secondary" id="copy-hu-btn" style="display:none;">📋 Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GENERATE BUTTON -->
+            <div class="generate-section">
+                <button class="btn" id="generate-btn">
+                    🚀 Transform Lyrics
+                </button>
+            </div>
+
+            <!-- ANALYSIS SECTION -->
+            <div id="analysis-section" style="grid-column: 1 / -1; display: none;">
+                <div class="analysis-box">
+                    <h3>📊 Structure Analysis</h3>
+                    <div id="analysis-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Syllable counter function (English approximation)
+        function countSyllables(text) {
+            // Remove structure tags
+            text = text.replace(/\[.*?\]/g, '');
+
+            // Count syllables (simplified algorithm)
+            const words = text.toLowerCase().match(/\b[a-z']+\b/g) || [];
+            let totalSyllables = 0;
+
+            words.forEach(word => {
+                // Basic syllable counting
+                word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+                word = word.replace(/^y/, '');
+                const syllables = word.match(/[aeiouy]{1,2}/g);
+                totalSyllables += syllables ? syllables.length : 1;
+            });
+
+            return totalSyllables;
+        }
+
+        // Update syllable count for original lyrics
+        const originalLyrics = document.getElementById('original-lyrics');
+        const originalSyllablesEl = document.getElementById('original-syllables');
+
+        originalLyrics.addEventListener('input', () => {
+            const count = countSyllables(originalLyrics.value);
+            originalSyllablesEl.textContent = count;
+        });
+
+        // Analyze structure
+        function analyzeStructure(lyrics) {
+            const lines = lyrics.split('\n').filter(line => line.trim());
+            const structure = [];
+            const rhymeScheme = [];
+            const syllablesPerLine = [];
+
+            let currentSection = null;
+            const sectionLines = [];
+
+            lines.forEach(line => {
+                if (line.match(/^\[.*\]$/)) {
+                    if (currentSection) {
+                        structure.push({
+                            section: currentSection,
+                            lines: [...sectionLines],
+                            syllables: sectionLines.map(l => countSyllables(l))
+                        });
+                        sectionLines.length = 0;
+                    }
+                    currentSection = line;
+                } else if (currentSection) {
+                    sectionLines.push(line);
+                }
+            });
+
+            if (currentSection && sectionLines.length > 0) {
+                structure.push({
+                    section: currentSection,
+                    lines: [...sectionLines],
+                    syllables: sectionLines.map(l => countSyllables(l))
+                });
+            }
+
+            return structure;
+        }
+
+        // Generate button handler
+        document.getElementById('generate-btn').addEventListener('click', async () => {
+            const originalText = originalLyrics.value.trim();
+            const theme = document.getElementById('new-theme').value.trim();
+
+            if (!originalText) {
+                alert('Please enter original English lyrics!');
+                return;
+            }
+
+            if (!theme) {
+                alert('Please enter a new theme!');
+                return;
+            }
+
+            const generateBtn = document.getElementById('generate-btn');
+            const newLyricsEl = document.getElementById('new-lyrics');
+            const hunTranslationEl = document.getElementById('hungarian-translation');
+            const newSyllablesEl = document.getElementById('new-syllables');
+
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span class="loading"></span> Transforming...';
+            newLyricsEl.value = 'Generating new lyrics...';
+            hunTranslationEl.value = 'Waiting for translation...';
+
+            // Analyze original structure
+            const structure = analyzeStructure(originalText);
+
+            // Show analysis
+            const analysisSection = document.getElementById('analysis-section');
+            const analysisContent = document.getElementById('analysis-content');
+
+            let analysisHTML = '';
+            structure.forEach((section, idx) => {
+                analysisHTML += `<div class="analysis-item">
+                    <strong>${section.section}</strong><br>
+                    Lines: ${section.lines.length} | Syllables per line: ${section.syllables.join(', ')}
+                </div>`;
+            });
+            analysisContent.innerHTML = analysisHTML;
+            analysisSection.style.display = 'block';
+
+            // Create detailed prompt for AI
+            const prompt = `You are a professional lyricist. Your task is to create NEW English lyrics based on an ORIGINAL template, but with a COMPLETELY DIFFERENT theme.
+
+CRITICAL REQUIREMENTS:
+1. PRESERVE EXACT STRUCTURE: Every [Verse], [Chorus], [Bridge], [Pre-Chorus], [Outro], [Intro] tag must remain in the EXACT same position
+2. PRESERVE SYLLABLE COUNT: Each new line must have the EXACT SAME number of syllables as the corresponding original line
+3. PRESERVE RHYME SCHEME: Maintain the same rhyme pattern (last word rhymes)
+4. PRESERVE PHONETICS: Try to match the phonetic flow and rhythm
+5. NEW THEME: Write about the NEW theme provided below
+6. MAINTAIN LINE COUNT: Same number of lines per section
+
+ORIGINAL LYRICS (Template):
+${originalText}
+
+NEW THEME:
+${theme}
+
+STRUCTURE ANALYSIS:
+${structure.map(s => `${s.section}: ${s.lines.length} lines, syllables: [${s.syllables.join(', ')}]`).join('\n')}
+
+OUTPUT FORMAT:
+- Include ALL structure tags exactly as in the original
+- Write new lyrics with the new theme
+- Match syllable count precisely for each line
+- Maintain rhyme scheme
+- Keep the same emotional flow and intensity
+
+NEW LYRICS:`;
+
+            try {
+                // Step 1: Generate new lyrics
+                const response1 = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        mode: 'lyrics-gen'
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data1 = await response1.json();
+
+                if (response1.ok && data1.message) {
+                    const newLyrics = data1.message.trim();
+                    newLyricsEl.value = newLyrics;
+
+                    // Update syllable count
+                    const newCount = countSyllables(newLyrics);
+                    newSyllablesEl.textContent = newCount;
+
+                    // Show copy button
+                    document.getElementById('copy-new-btn').style.display = 'block';
+
+                    // Step 2: Translate to Hungarian
+                    hunTranslationEl.value = 'Translating to Hungarian...';
+
+                    const translatePrompt = `Translate these English lyrics to Hungarian. Maintain the poetic style and meaning. Keep the structure tags like [Verse], [Chorus], etc.
+
+ENGLISH LYRICS:
+${newLyrics}
+
+HUNGARIAN TRANSLATION:`;
+
+                    const response2 = await fetch('/.netlify/functions/gemini', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            prompt: translatePrompt,
+                            mode: 'translate'
+                        }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data2 = await response2.json();
+
+                    if (response2.ok && data2.message) {
+                        hunTranslationEl.value = data2.message.trim();
+                        document.getElementById('copy-hu-btn').style.display = 'block';
+                    } else {
+                        hunTranslationEl.value = 'Translation error: ' + (data2.error || 'Unknown error');
+                    }
+                } else {
+                    newLyricsEl.value = 'Error: ' + (data1.error || 'Unknown error');
+                }
+            } catch (error) {
+                newLyricsEl.value = 'Error: ' + error.message;
+                hunTranslationEl.value = '';
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '🚀 Transform Lyrics';
+            }
+        });
+
+        // Copy buttons
+        document.getElementById('copy-new-btn').addEventListener('click', () => {
+            const text = document.getElementById('new-lyrics').value;
+            copyToClipboard(text, 'copy-new-btn');
+        });
+
+        document.getElementById('copy-hu-btn').addEventListener('click', () => {
+            const text = document.getElementById('hungarian-translation').value;
+            copyToClipboard(text, 'copy-hu-btn');
+        });
+
+        function copyToClipboard(text, buttonId) {
+            if (!text) {
+                alert('Nothing to copy!');
+                return;
+            }
+
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById(buttonId);
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                alert('Copy failed!');
+            });
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            originalSyllablesEl.textContent = '0';
+        });
+    </script>
+</body>
+</html>
