@@ -1,45 +1,65 @@
 # Claude Code MCP Configuration
 
-## Playwright MCP Server
+Ez a projekt több MCP szervert használ, amelyek különböző funkciókat biztosítanak a Claude Code számára.
 
-Ez a projekt a Playwright MCP-t használja, amely lehetővé teszi a Claude Code számára, hogy automatizált böngésző teszteket futtasson.
+## Konfigurált MCP Szerverek
 
-### Beállítások
+### 1. Playwright MCP Server
 
-A `mcp.json` fájl tartalmazza a Playwright MCP szerver konfigurációját:
+A Playwright MCP lehetővé teszi a Claude Code számára, hogy automatizált böngésző teszteket futtasson.
 
-```json
-{
-  "mcpServers": {
-    "playwright": {
-      "command": "npx",
-      "args": ["-y", "@executeautomation/playwright-mcp-server"],
-      "env": {}
-    }
-  }
-}
-```
-
-### Használat
-
-A Playwright MCP szerver a következő funkciókat biztosítja:
+#### Funkciók
 
 - **Böngésző automatizálás**: Weboldal megnyitása, navigálás, kattintás, űrlap kitöltés
 - **Screenshot készítés**: Képernyőképek készítése teszteléshez
 - **Elem keresés**: DOM elemek keresése és interakció velük
 - **Tesztelés**: Automatizált tesztek futtatása a webalkalmazáson
 
-### Követelmények
+#### Követelmények
 
 - Node.js telepítve
 - Playwright telepítve (dev dependency a projektben)
 
-### Aktiválás
+### 2. Supabase MCP Server
 
-A Claude Code Web automatikusan felismeri és betölti az MCP szervert, amikor megnyitod a projektet.
+A Supabase MCP lehetővé teszi az adatbázis-kezelést és backend műveleteket.
 
-### Továbbiak
+#### Funkciók
 
-További információk a Playwright MCP-ről:
+- **Adatbázis műveletek**: Táblák lekérdezése, beszúrás, frissítés, törlés
+- **Authentication**: Felhasználók kezelése
+- **Storage**: Fájlok tárolása és kezelése
+- **Real-time**: Valós idejű adatok figyelése
+
+#### Beállítás
+
+1. Hozz létre egy Supabase projektet: https://supabase.com
+2. Másold ki a Project URL-t és az anon key-t
+3. Hozz létre egy `.env` fájlt a projekt gyökérkönyvtárában:
+
+```bash
+cp .env.example .env
+```
+
+4. Add meg a Supabase credentialeket a `.env` fájlban:
+
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-supabase-anon-key
+```
+
+**FONTOS**: A `.env` fájl ne kerüljön be a git-be! (már benne van a `.gitignore`-ban)
+
+## MCP Konfiguráció
+
+A teljes MCP konfiguráció a `.claude/mcp.json` fájlban található.
+
+## Aktiválás
+
+A Claude Code Web automatikusan felismeri és betölti az MCP szervereket, amikor megnyitod a projektet.
+
+## További Információk
+
 - [Playwright Documentation](https://playwright.dev/)
+- [Supabase Documentation](https://supabase.com/docs)
 - [MCP Protocol](https://modelcontextprotocol.io/)
