@@ -19,5 +19,8 @@
   "homepage": "https://github.com/Orelexa/gemini-music-app#readme",
   "dependencies": {
     "@google/generative-ai": "^0.24.1"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1"
   }
 }
