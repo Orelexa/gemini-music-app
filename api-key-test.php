@@ -7,7 +7,7 @@
 header('Content-Type: application/json');
 
 // Ugyanaz a beállítás, mint az api.php-ban
-$GEMINI_API_KEY = getenv('GEMINI_API_KEY_NEW') ?: 'IDE_MÁSOLD_BE_A_KULCSOT';
+$GEMINI_API_KEY = getenv('GEMINI_API_KEY_NEW') ?: 'REMOVED_API_KEY';
 
 // Ellenőrzések
 $results = [];

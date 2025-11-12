@@ -26,7 +26,7 @@ $prompt = $input['prompt'] ?? '';
 $mode = $input['mode'] ?? 'lyrics-gen';
 
 // API kulcs - CSERÉLD LE A SAJÁTODRA!
-$GEMINI_API_KEY = 'IDE_ÍROD_AZ_API_KULCSOT';
+$GEMINI_API_KEY = getenv('GEMINI_API_KEY_NEW') ?: 'REMOVED_API_KEY';
 
 if ($GEMINI_API_KEY === 'IDE_ÍROD_AZ_API_KULCSOT') {
     echo json_encode(['error' => 'API kulcs nincs beállítva! Szerkeszd az api-simple.php fájlt.']);
