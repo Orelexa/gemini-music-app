@@ -67,15 +67,22 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // SSL bypass
+curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 
 $response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $curlError = curl_error($ch);
+$curlErrno = curl_errno($ch);
 curl_close($ch);
 
-if ($curlError) {
-    echo json_encode(['error' => 'cURL error: ' . $curlError]);
+if ($curlError || $curlErrno) {
+    echo json_encode([
+        'error' => 'cURL error: ' . ($curlError ?: 'Unknown'),
+        'errno' => $curlErrno,
+        'http_code' => $httpCode
+    ]);
     exit;
 }
 
