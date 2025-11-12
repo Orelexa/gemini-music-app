@@ -454,6 +454,11 @@
             }
         }
     </style>
+
+    <!-- PocketBase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.umd.js"></script>
+    <!-- PocketBase Config -->
+    <script src="config.js"></script>
 </head>
 <body>
     <div class="container">
@@ -826,7 +831,7 @@
             const requestBody = { prompt, mode: 'lyrics-gen' };
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('/api.php', {
                     method: 'POST',
                     body: JSON.stringify(requestBody),
                     headers: {
@@ -887,9 +892,9 @@
             imageContainer.classList.add('empty');
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('/api.php', {
                     method: 'POST',
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         prompt: imagePrompt,
                         mode: 'image-gen'
                     }),
@@ -960,7 +965,7 @@
             const prompt = `Elemezd ezt a dalszöveget és ajánlj zenei stílust, műfajt, hangnemet, tempót és hangulatot:\n\n${lyrics}`;
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('/api.php', {
                     method: 'POST',
                     body: JSON.stringify({ prompt, mode: 'music-style' }),
                     headers: { 'Content-Type': 'application/json' }
@@ -998,7 +1003,7 @@
             const prompt = `Add meg dallam ötleteket ehhez a dalszöveghez (dallam íve, ritmus, karakter, hangterjedelemjavaslatok):\n\n${lyrics}`;
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('/api.php', {
                     method: 'POST',
                     body: JSON.stringify({ prompt, mode: 'melody-ideas' }),
                     headers: { 'Content-Type': 'application/json' }
@@ -1036,7 +1041,7 @@
             const prompt = `Adj akkord progresszió javaslatokat ehhez a dalszöveghez különböző hangnemekben:\n\n${lyrics}`;
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('/api.php', {
                     method: 'POST',
                     body: JSON.stringify({ prompt, mode: 'chord-progression' }),
                     headers: { 'Content-Type': 'application/json' }
@@ -1073,7 +1078,7 @@
             const prompt = `Fordítsd le angolra ezt a dalszöveget, megtartva a rímeket és a ritmust:\n\n${lyrics}`;
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('/api.php', {
                     method: 'POST',
                     body: JSON.stringify({ prompt, mode: 'translate-english' }),
                     headers: { 'Content-Type': 'application/json' }
@@ -1108,8 +1113,8 @@
             }
         });
 
-        // Dalszöveg mentése localStorage-ba
-        document.getElementById('save-lyrics-btn').addEventListener('click', () => {
+        // Dalszöveg mentése (PocketBase)
+        document.getElementById('save-lyrics-btn').addEventListener('click', async () => {
             const lyrics = document.getElementById('output').value.trim();
             if (!lyrics) {
                 alert('Nincs mit menteni!');
@@ -1117,27 +1122,21 @@
             }
 
             const theme = document.getElementById('theme').value.trim() || 'Névtelen dalszöveg';
-            const savedLyrics = JSON.parse(localStorage.getItem('savedLyrics') || '[]');
-            
-            const newLyric = {
-                id: Date.now(),
-                title: theme,
-                lyrics: lyrics,
-                date: new Date().toISOString()
-            };
 
-            savedLyrics.unshift(newLyric);
-            localStorage.setItem('savedLyrics', JSON.stringify(savedLyrics));
-            
-            alert('✅ Dalszöveg elmentve!');
-            loadSavedLyrics();
+            try {
+                await PB.saveLyric(theme, lyrics);
+                alert('✅ Dalszöveg elmentve!');
+                loadSavedLyrics();
+            } catch (error) {
+                alert('❌ Hiba a mentés során: ' + error.message);
+            }
         });
 
-        // Mentett dalszövegek betöltése
-        function loadSavedLyrics() {
-            const savedLyrics = JSON.parse(localStorage.getItem('savedLyrics') || '[]');
+        // Mentett dalszövegek betöltése (PocketBase)
+        async function loadSavedLyrics() {
+            const savedLyrics = await PB.getAllLyrics();
             const container = document.getElementById('saved-lyrics-list');
-            
+
             if (savedLyrics.length === 0) {
                 container.innerHTML = '<p style="color: #9e9e9e; font-style: italic; text-align: center;">Még nincsenek mentett dalszövegek</p>';
                 document.getElementById('clear-all-btn').style.display = 'none';
@@ -1153,12 +1152,12 @@
                 div.innerHTML = `
                     <div class="saved-item-header">
                         <span class="saved-item-title">${item.title}</span>
-                        <button class="delete-btn" onclick="deleteLyric(${item.id})">🗑️</button>
+                        <button class="delete-btn" onclick="deleteLyric('${item.id}')">🗑️</button>
                     </div>
-                    <div class="saved-item-date">${new Date(item.date).toLocaleString('hu-HU')}</div>
+                    <div class="saved-item-date">${new Date(item.created).toLocaleString('hu-HU')}</div>
                     <div class="saved-item-preview">${item.lyrics.substring(0, 50)}...</div>
                 `;
-                
+
                 div.addEventListener('click', (e) => {
                     if (!e.target.classList.contains('delete-btn')) {
                         document.getElementById('output').value = item.lyrics;
@@ -1166,31 +1165,38 @@
                         showOutputActions();
                     }
                 });
-                
+
                 container.appendChild(div);
             });
         }
 
-        // Egyedi dalszöveg törlése
-        window.deleteLyric = function(id) {
+        // Egyedi dalszöveg törlése (PocketBase)
+        window.deleteLyric = async function(id) {
             if (!confirm('Biztosan törlöd ezt a dalszöveget?')) return;
-            
-            let savedLyrics = JSON.parse(localStorage.getItem('savedLyrics') || '[]');
-            savedLyrics = savedLyrics.filter(item => item.id !== id);
-            localStorage.setItem('savedLyrics', JSON.stringify(savedLyrics));
-            loadSavedLyrics();
+
+            try {
+                await PB.deleteLyric(id);
+                loadSavedLyrics();
+            } catch (error) {
+                alert('❌ Hiba a törlés során: ' + error.message);
+            }
         };
 
-        // Összes törlése
-        document.getElementById('clear-all-btn').addEventListener('click', () => {
+        // Összes törlése (PocketBase)
+        document.getElementById('clear-all-btn').addEventListener('click', async () => {
             if (!confirm('Biztosan törlöd az összes mentett dalszöveget?')) return;
-            localStorage.removeItem('savedLyrics');
-            loadSavedLyrics();
+
+            try {
+                await PB.deleteAllLyrics();
+                loadSavedLyrics();
+            } catch (error) {
+                alert('❌ Hiba a törlés során: ' + error.message);
+            }
         });
 
         // Export dalszövegek (JSON letöltés)
-        document.getElementById('export-lyrics-btn').addEventListener('click', () => {
-            const savedLyrics = JSON.parse(localStorage.getItem('savedLyrics') || '[]');
+        document.getElementById('export-lyrics-btn').addEventListener('click', async () => {
+            const savedLyrics = await PB.getAllLyrics();
 
             if (savedLyrics.length === 0) {
                 alert('Nincs mentett dalszöveg az exportáláshoz!');
@@ -1220,7 +1226,7 @@
             document.getElementById('import-file-input').click();
         });
 
-        document.getElementById('import-file-input').addEventListener('change', (e) => {
+        document.getElementById('import-file-input').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
@@ -1230,7 +1236,7 @@
             }
 
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = async (event) => {
                 try {
                     const importedLyrics = JSON.parse(event.target.result);
 
@@ -1240,40 +1246,32 @@
                     }
 
                     // Meglévő dalszövegek
-                    const existingLyrics = JSON.parse(localStorage.getItem('savedLyrics') || '[]');
+                    const existingLyrics = await PB.getAllLyrics();
 
-                    // Merge stratégia: kérdezzük meg a felhasználót
-                    let finalLyrics = [];
-
+                    // Merge stratégia
+                    let shouldMerge = true;
                     if (existingLyrics.length > 0) {
-                        const choice = confirm(
+                        shouldMerge = confirm(
                             `Jelenleg ${existingLyrics.length} mentett dalszöveg van.\n\n` +
                             `OK = Hozzáadás a meglévőkhöz (${existingLyrics.length + importedLyrics.length} összesen)\n` +
                             `Mégse = Lecserélés (${importedLyrics.length} összesen)`
                         );
 
-                        if (choice) {
-                            // Hozzáadás - kombináljuk az ID ütközések elkerülésével
-                            const maxId = Math.max(...existingLyrics.map(l => l.id), 0);
-                            const renumberedImports = importedLyrics.map((lyric, index) => ({
-                                ...lyric,
-                                id: maxId + index + 1
-                            }));
-                            finalLyrics = [...existingLyrics, ...renumberedImports];
-                        } else {
-                            // Lecserélés
-                            finalLyrics = importedLyrics;
+                        // Ha lecserélés, töröljük a meglévőket
+                        if (!shouldMerge) {
+                            await PB.deleteAllLyrics();
                         }
-                    } else {
-                        // Nincs meglévő, csak importáljuk
-                        finalLyrics = importedLyrics;
                     }
 
-                    // Mentés
-                    localStorage.setItem('savedLyrics', JSON.stringify(finalLyrics));
+                    // Importálás - minden elemet egyesével mentünk
+                    for (const lyric of importedLyrics) {
+                        await PB.saveLyric(lyric.title, lyric.lyrics);
+                    }
+
                     loadSavedLyrics();
 
-                    alert(`✅ ${importedLyrics.length} dalszöveg importálva! (Összesen: ${finalLyrics.length})`);
+                    const finalCount = await PB.getAllLyrics();
+                    alert(`✅ ${importedLyrics.length} dalszöveg importálva! (Összesen: ${finalCount.length})`);
                 } catch (error) {
                     alert('❌ Hiba az import során: ' + error.message);
                 }
@@ -1320,7 +1318,7 @@ FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok
             const requestBody = { prompt: regeneratePrompt, mode: 'lyrics-gen' };
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('/api.php', {
                     method: 'POST',
                     body: JSON.stringify(requestBody),
                     headers: {
@@ -1371,7 +1369,7 @@ FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok
             const prompt = `Fordítsd le ezt a szöveget angolról magyarra. Ügyelj a természetes nyelvre és a pontos jelentésre. Csak a fordítást add meg, semmi mást.\n\nSzöveg:\n${sourceText}`;
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('/api.php', {
                     method: 'POST',
                     body: JSON.stringify({ prompt, mode: 'translate' }),
                     headers: { 'Content-Type': 'application/json' }
@@ -1411,7 +1409,7 @@ FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok
             const prompt = `Fordítsd le ezt a szöveget magyarról angolra. Ügyelj a természetes nyelvre és a pontos jelentésre. Csak a fordítást add meg, semmi mást.\n\nSzöveg:\n${sourceText}`;
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('/api.php', {
                     method: 'POST',
                     body: JSON.stringify({ prompt, mode: 'translate' }),
                     headers: { 'Content-Type': 'application/json' }
@@ -1577,9 +1575,9 @@ function hideOutputActions() {
             output.textContent = 'Zenei stílus ajánlás generálása folyamatban...';
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('/api.php', {
                     method: 'POST',
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         prompt: lyrics,
                         mode: 'music-style'
                     }),
@@ -1622,9 +1620,9 @@ function hideOutputActions() {
             output.textContent = 'Dallam ötletek generálása folyamatban...';
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('/api.php', {
                     method: 'POST',
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         prompt: lyrics,
                         mode: 'melody-ideas'
                     }),
@@ -1667,9 +1665,9 @@ function hideOutputActions() {
             output.textContent = 'Akkord progresszió generálása folyamatban...';
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('/api.php', {
                     method: 'POST',
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         prompt: lyrics,
                         mode: 'chord-progression'
                     }),
@@ -1760,9 +1758,9 @@ Reflective mood with light percussion
 
 Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
 `;
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('/api.php', {
                     method: 'POST',
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         prompt: promptForAI,
                         mode: 'suno-prompt'
                     }),
@@ -1848,7 +1846,7 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 }
 
                 try {
-                    const response = await fetch('/.netlify/functions/gemini', {
+                    const response = await fetch('/api.php', {
                         method: 'POST',
                         body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
                         headers: { 'Content-Type': 'application/json' }
@@ -1896,7 +1894,7 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 }
 
                 try {
-                    const response = await fetch('/.netlify/functions/gemini', {
+                    const response = await fetch('/api.php', {
                         method: 'POST',
                         body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
                         headers: { 'Content-Type': 'application/json' }
@@ -1946,7 +1944,7 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 const prompt = `Add meg 5 alternatív szót vagy kifejezést erre: "${selectedText}". A kontextus dalszöveg írás. Adj csak egyszerű szavakat, vesszővel elválasztva, semmi mást.`;
 
                 try {
-                    const response = await fetch('/.netlify/functions/gemini', {
+                    const response = await fetch('/api.php', {
                         method: 'POST',
                         body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
                         headers: { 'Content-Type': 'application/json' }
@@ -1992,7 +1990,7 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 const prompt = `Finomítsd és javítsd ezt a dalszöveg részt. Tedd költőibbé, érzelmesebben és kifejezőbbé, de tartsd meg az eredeti jelentést és hosszt.\n\nTeljes kontextus:\n${fullText}\n\nFinomítandó rész:\n"${selectedText}"\n\nCsak a finomított részt írd, semmi mást.`;
 
                 try {
-                    const response = await fetch('/.netlify/functions/gemini', {
+                    const response = await fetch('/api.php', {
                         method: 'POST',
                         body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
                         headers: { 'Content-Type': 'application/json' }
@@ -2080,10 +2078,10 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
             });
         }
 
-        // Preview mentése
+        // Preview mentése (PocketBase)
         const savePreviewBtn = document.getElementById('save-preview-btn');
         if (savePreviewBtn) {
-            savePreviewBtn.addEventListener('click', function() {
+            savePreviewBtn.addEventListener('click', async function() {
                 const text = interactiveEditor.value.trim();
 
                 if (!text) {
@@ -2094,20 +2092,13 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 const title = prompt('Add meg a dalszöveg címét:', 'Interaktív dalszöveg');
                 if (!title) return;
 
-                const savedLyrics = JSON.parse(localStorage.getItem('savedLyrics') || '[]');
-
-                const newLyric = {
-                    id: Date.now(),
-                    title: title,
-                    lyrics: text,
-                    date: new Date().toISOString()
-                };
-
-                savedLyrics.unshift(newLyric);
-                localStorage.setItem('savedLyrics', JSON.stringify(savedLyrics));
-
-                alert('✅ Dalszöveg elmentve!');
-                loadSavedLyrics();
+                try {
+                    await PB.saveLyric(title, text);
+                    alert('✅ Dalszöveg elmentve!');
+                    loadSavedLyrics();
+                } catch (error) {
+                    alert('❌ Hiba a mentés során: ' + error.message);
+                }
             });
         }
 
