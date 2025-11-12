@@ -1,3 +1,6 @@
+// API Base URL (Laragon környezethez)
+const API_BASE = '/gemini-music-app';
+
 // PocketBase konfiguráció
 const POCKETBASE_URL = 'http://192.168.1.122:8090';
 const pb = new PocketBase(POCKETBASE_URL);
