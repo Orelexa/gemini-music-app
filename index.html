@@ -733,17 +733,6 @@
             <button class="btn danger" id="clear-all-btn" style="width: 100%; margin-top: 15px; display: none;">
                 🗑️ Összes Törlése
             </button>
-
-            <!-- Export/Import gombok -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-                <button class="btn secondary" id="export-lyrics-btn" style="width: 100%;">
-                    📥 Export (Letöltés)
-                </button>
-                <button class="btn secondary" id="import-lyrics-btn" style="width: 100%;">
-                    📤 Import (Feltöltés)
-                </button>
-            </div>
-            <input type="file" id="import-file-input" accept=".json" style="display: none;">
         </div>
 
         <!-- Translator szekció -->
@@ -1192,95 +1181,6 @@
             } catch (error) {
                 alert('❌ Hiba a törlés során: ' + error.message);
             }
-        });
-
-        // Export dalszövegek (JSON letöltés)
-        document.getElementById('export-lyrics-btn').addEventListener('click', async () => {
-            const savedLyrics = await PB.getAllLyrics();
-
-            if (savedLyrics.length === 0) {
-                alert('Nincs mentett dalszöveg az exportáláshoz!');
-                return;
-            }
-
-            // JSON fájl létrehozása
-            const dataStr = JSON.stringify(savedLyrics, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-
-            // Letöltés trigger
-            const downloadLink = document.createElement('a');
-            downloadLink.href = URL.createObjectURL(dataBlob);
-
-            // Fájlnév: dalszoevegek_YYYY-MM-DD.json
-            const date = new Date().toISOString().split('T')[0];
-            downloadLink.download = `dalszovegek_${date}.json`;
-
-            downloadLink.click();
-            URL.revokeObjectURL(downloadLink.href);
-
-            alert(`✅ ${savedLyrics.length} dalszöveg exportálva!`);
-        });
-
-        // Import dalszövegek (JSON feltöltés)
-        document.getElementById('import-lyrics-btn').addEventListener('click', () => {
-            document.getElementById('import-file-input').click();
-        });
-
-        document.getElementById('import-file-input').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            if (!file.name.endsWith('.json')) {
-                alert('Csak JSON fájlokat lehet importálni!');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                try {
-                    const importedLyrics = JSON.parse(event.target.result);
-
-                    // Ellenőrzés: array formátum
-                    if (!Array.isArray(importedLyrics)) {
-                        throw new Error('A JSON fájl formátuma nem megfelelő (array kell).');
-                    }
-
-                    // Meglévő dalszövegek
-                    const existingLyrics = await PB.getAllLyrics();
-
-                    // Merge stratégia
-                    let shouldMerge = true;
-                    if (existingLyrics.length > 0) {
-                        shouldMerge = confirm(
-                            `Jelenleg ${existingLyrics.length} mentett dalszöveg van.\n\n` +
-                            `OK = Hozzáadás a meglévőkhöz (${existingLyrics.length + importedLyrics.length} összesen)\n` +
-                            `Mégse = Lecserélés (${importedLyrics.length} összesen)`
-                        );
-
-                        // Ha lecserélés, töröljük a meglévőket
-                        if (!shouldMerge) {
-                            await PB.deleteAllLyrics();
-                        }
-                    }
-
-                    // Importálás - minden elemet egyesével mentünk
-                    for (const lyric of importedLyrics) {
-                        await PB.saveLyric(lyric.title, lyric.lyrics);
-                    }
-
-                    loadSavedLyrics();
-
-                    const finalCount = await PB.getAllLyrics();
-                    alert(`✅ ${importedLyrics.length} dalszöveg importálva! (Összesen: ${finalCount.length})`);
-                } catch (error) {
-                    alert('❌ Hiba az import során: ' + error.message);
-                }
-            };
-
-            reader.readAsText(file);
-
-            // Reset file input
-            e.target.value = '';
         });
 
         // Újragenerálás funkció
