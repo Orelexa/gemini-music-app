@@ -131,13 +131,34 @@ try {
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Content-Type: application/json'
     ]);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // SSL ellenőrzés kikapcsolása Windows-hoz
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    $curlErrno = curl_errno($ch);
     curl_close($ch);
 
+    // cURL hiba ellenőrzés
+    if ($curlError || $curlErrno) {
+        http_response_code(500);
+        echo json_encode([
+            'error' => 'cURL error: ' . ($curlError ?: 'Unknown'),
+            'errno' => $curlErrno,
+            'http_code' => $httpCode
+        ]);
+        exit;
+    }
+
     if ($httpCode !== 200) {
-        throw new Exception("Gemini API error: HTTP $httpCode");
+        http_response_code(500);
+        echo json_encode([
+            'error' => "Gemini API error: HTTP $httpCode",
+            'response' => substr($response, 0, 500)
+        ]);
+        exit;
     }
 
     $data = json_decode($response, true);
