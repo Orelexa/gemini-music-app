@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 // API kulcs beállítása
 // FONTOS: Cseréld le a saját Gemini API kulcsodra!
-$GEMINI_API_KEY = getenv('GEMINI_API_KEY_NEW') ?: 'IDE_MÁSOLD_BE_A_KULCSOT';
+$GEMINI_API_KEY = getenv('GEMINI_API_KEY_NEW') ?: 'AIzaSyBm80gknYyUgzztIdjJpu8RRy1zLfgYXWM';
 
 // Input adatok olvasása
 $input = json_decode(file_get_contents('php://input'), true);
