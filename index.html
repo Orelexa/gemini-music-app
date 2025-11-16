@@ -1699,20 +1699,64 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
             }
         });
 
-        // Másolás gomb
+        // Másolás gomb - javított verzió fallback-kel
         document.getElementById('copy-suno-btn').addEventListener('click', function() {
             const text = document.getElementById('suno-result').textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = this;
-                const originalText = btn.textContent;
-                btn.textContent = '✅ Másolva!';
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                }, 2000);
-            }).catch(err => {
-                alert('Másolás sikertelen! Kérlek, másold ki manuálisan.');
-            });
+            const btn = this;
+            const originalText = btn.textContent;
+
+            // Próbáljuk meg a modern clipboard API-val
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    btn.textContent = '✅ Másolva!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    // Ha nem sikerül, használjuk a fallback módszert
+                    copyToClipboardFallback(text, btn, originalText);
+                });
+            } else {
+                // Ha nincs clipboard API, használjuk a fallback módszert
+                copyToClipboardFallback(text, btn, originalText);
+            }
         });
+
+        // Fallback másolás függvény (régebbi böngészőkhöz)
+        function copyToClipboardFallback(text, btn, originalText) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.top = '0';
+            textarea.style.left = '0';
+            textarea.style.width = '2em';
+            textarea.style.height = '2em';
+            textarea.style.padding = '0';
+            textarea.style.border = 'none';
+            textarea.style.outline = 'none';
+            textarea.style.boxShadow = 'none';
+            textarea.style.background = 'transparent';
+
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    btn.textContent = '✅ Másolva!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                } else {
+                    alert('Másolás sikertelen! Kérlek, másold ki manuálisan (Ctrl+C vagy Cmd+C).');
+                }
+            } catch (err) {
+                alert('Másolás sikertelen! Kérlek, másold ki manuálisan (Ctrl+C vagy Cmd+C).');
+            }
+
+            document.body.removeChild(textarea);
+        }
 
         // ==========================================
         // INTERAKTÍV SZERKESZTŐ FUNKCIÓK
