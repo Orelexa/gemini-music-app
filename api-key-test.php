@@ -6,8 +6,15 @@
 
 header('Content-Type: application/json');
 
-// Ugyanaz a beállítás, mint az api.php-ban
-$GEMINI_API_KEY = getenv('GEMINI_API_KEY_NEW') ?: 'REMOVED_API_KEY';
+// API kulcs betöltése környezeti változóból
+$GEMINI_API_KEY = getenv('GEMINI_API_KEY_NEW');
+
+if (!$GEMINI_API_KEY) {
+    echo json_encode([
+        'error' => 'API kulcs nincs beállítva! Állítsd be a GEMINI_API_KEY_NEW környezeti változót.'
+    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
 // Ellenőrzések
 $results = [];

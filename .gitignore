@@ -1,0 +1,36 @@
+# Environment variables - CRITICAL: Never commit these!
+.env
+.env.local
+.env.*.local
+
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build outputs
+dist/
+build/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+uploads/
+
+# API keys and secrets (additional protection)
+**/secrets/
+**/*.key
+**/*.pem

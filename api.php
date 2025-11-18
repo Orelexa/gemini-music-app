@@ -27,9 +27,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// API kulcs beállítása
-// FONTOS: Cseréld le a saját Gemini API kulcsodra!
-$GEMINI_API_KEY = getenv('GEMINI_API_KEY_NEW') ?: 'REMOVED_API_KEY';
+// API kulcs betöltése környezeti változóból
+$GEMINI_API_KEY = getenv('GEMINI_API_KEY_NEW');
+
+if (!$GEMINI_API_KEY) {
+    http_response_code(500);
+    echo json_encode(['error' => 'API kulcs nincs beállítva! Állítsd be a GEMINI_API_KEY_NEW környezeti változót.']);
+    exit;
+}
 
 // Input adatok olvasása
 $input = json_decode(file_get_contents('php://input'), true);
