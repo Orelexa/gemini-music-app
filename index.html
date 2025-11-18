@@ -826,7 +826,7 @@
             const requestBody = { prompt, mode: 'lyrics-gen' };
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('api.php', {
                     method: 'POST',
                     body: JSON.stringify(requestBody),
                     headers: {
@@ -887,9 +887,9 @@
             imageContainer.classList.add('empty');
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('api.php', {
                     method: 'POST',
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         prompt: imagePrompt,
                         mode: 'image-gen'
                     }),
@@ -960,7 +960,7 @@
             const prompt = `Elemezd ezt a dalszöveget és ajánlj zenei stílust, műfajt, hangnemet, tempót és hangulatot:\n\n${lyrics}`;
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('api.php', {
                     method: 'POST',
                     body: JSON.stringify({ prompt, mode: 'music-style' }),
                     headers: { 'Content-Type': 'application/json' }
@@ -998,7 +998,7 @@
             const prompt = `Add meg dallam ötleteket ehhez a dalszöveghez (dallam íve, ritmus, karakter, hangterjedelemjavaslatok):\n\n${lyrics}`;
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('api.php', {
                     method: 'POST',
                     body: JSON.stringify({ prompt, mode: 'melody-ideas' }),
                     headers: { 'Content-Type': 'application/json' }
@@ -1036,7 +1036,7 @@
             const prompt = `Adj akkord progresszió javaslatokat ehhez a dalszöveghez különböző hangnemekben:\n\n${lyrics}`;
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('api.php', {
                     method: 'POST',
                     body: JSON.stringify({ prompt, mode: 'chord-progression' }),
                     headers: { 'Content-Type': 'application/json' }
@@ -1073,7 +1073,7 @@
             const prompt = `Fordítsd le angolra ezt a dalszöveget, megtartva a rímeket és a ritmust:\n\n${lyrics}`;
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('api.php', {
                     method: 'POST',
                     body: JSON.stringify({ prompt, mode: 'translate-english' }),
                     headers: { 'Content-Type': 'application/json' }
@@ -1320,7 +1320,7 @@ FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok
             const requestBody = { prompt: regeneratePrompt, mode: 'lyrics-gen' };
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('api.php', {
                     method: 'POST',
                     body: JSON.stringify(requestBody),
                     headers: {
@@ -1371,7 +1371,7 @@ FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok
             const prompt = `Fordítsd le ezt a szöveget angolról magyarra. Ügyelj a természetes nyelvre és a pontos jelentésre. Csak a fordítást add meg, semmi mást.\n\nSzöveg:\n${sourceText}`;
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('api.php', {
                     method: 'POST',
                     body: JSON.stringify({ prompt, mode: 'translate' }),
                     headers: { 'Content-Type': 'application/json' }
@@ -1411,7 +1411,7 @@ FONTOS: A válaszod kizárólag a dalszöveg legyen, kiegészítő magyarázatok
             const prompt = `Fordítsd le ezt a szöveget magyarról angolra. Ügyelj a természetes nyelvre és a pontos jelentésre. Csak a fordítást add meg, semmi mást.\n\nSzöveg:\n${sourceText}`;
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('api.php', {
                     method: 'POST',
                     body: JSON.stringify({ prompt, mode: 'translate' }),
                     headers: { 'Content-Type': 'application/json' }
@@ -1577,7 +1577,7 @@ function hideOutputActions() {
             output.textContent = 'Zenei stílus ajánlás generálása folyamatban...';
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('api.php', {
                     method: 'POST',
                     body: JSON.stringify({ 
                         prompt: lyrics,
@@ -1622,7 +1622,7 @@ function hideOutputActions() {
             output.textContent = 'Dallam ötletek generálása folyamatban...';
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('api.php', {
                     method: 'POST',
                     body: JSON.stringify({ 
                         prompt: lyrics,
@@ -1667,7 +1667,7 @@ function hideOutputActions() {
             output.textContent = 'Akkord progresszió generálása folyamatban...';
 
             try {
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('api.php', {
                     method: 'POST',
                     body: JSON.stringify({ 
                         prompt: lyrics,
@@ -1760,7 +1760,7 @@ Reflective mood with light percussion
 
 Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
 `;
-                const response = await fetch('/.netlify/functions/gemini', {
+                const response = await fetch('api.php', {
                     method: 'POST',
                     body: JSON.stringify({ 
                         prompt: promptForAI,
@@ -1848,7 +1848,7 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 }
 
                 try {
-                    const response = await fetch('/.netlify/functions/gemini', {
+                    const response = await fetch('api.php', {
                         method: 'POST',
                         body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
                         headers: { 'Content-Type': 'application/json' }
@@ -1896,7 +1896,7 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 }
 
                 try {
-                    const response = await fetch('/.netlify/functions/gemini', {
+                    const response = await fetch('api.php', {
                         method: 'POST',
                         body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
                         headers: { 'Content-Type': 'application/json' }
@@ -1946,7 +1946,7 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 const prompt = `Add meg 5 alternatív szót vagy kifejezést erre: "${selectedText}". A kontextus dalszöveg írás. Adj csak egyszerű szavakat, vesszővel elválasztva, semmi mást.`;
 
                 try {
-                    const response = await fetch('/.netlify/functions/gemini', {
+                    const response = await fetch('api.php', {
                         method: 'POST',
                         body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
                         headers: { 'Content-Type': 'application/json' }
@@ -1992,7 +1992,7 @@ Remember: NO brackets [], NO parentheses (), just simple descriptive sentences!
                 const prompt = `Finomítsd és javítsd ezt a dalszöveg részt. Tedd költőibbé, érzelmesebben és kifejezőbbé, de tartsd meg az eredeti jelentést és hosszt.\n\nTeljes kontextus:\n${fullText}\n\nFinomítandó rész:\n"${selectedText}"\n\nCsak a finomított részt írd, semmi mást.`;
 
                 try {
-                    const response = await fetch('/.netlify/functions/gemini', {
+                    const response = await fetch('api.php', {
                         method: 'POST',
                         body: JSON.stringify({ prompt, mode: 'lyrics-gen' }),
                         headers: { 'Content-Type': 'application/json' }

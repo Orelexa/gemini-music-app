@@ -11,25 +11,36 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Hívás a Netlify Functionre
+    // Hívás a PHP API-ra
     try {
       outputDiv.innerText = "Generálás folyamatban...";
-      const response = await fetch('/.netlify/functions/gemini', {
+      const response = await fetch('api.php', {
         method: 'POST',
         body: JSON.stringify({ prompt }),
         headers: {
           'Content-Type': 'application/json'
         }
       });
-      const data = await response.json();
 
-      if (response.ok) {
-        outputDiv.innerText = data.message;
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        outputDiv.innerText = `Hiba: Érvénytelen szerver válasz`;
+        console.error('JSON parse hiba:', jsonError);
+        return;
+      }
+
+      if (response.ok && data.message) {
+        outputDiv.innerText = data.message.trim();
       } else {
-        outputDiv.innerText = `Hiba: ${data.error}`;
+        const errorMsg = data?.error || 'Ismeretlen hiba történt';
+        outputDiv.innerText = `Hiba: ${errorMsg}`;
+        console.error('API hiba:', data);
       }
     } catch (error) {
       outputDiv.innerText = `Hiba: ${error.message}`;
+      console.error('Fetch hiba:', error);
     }
   });
 });
